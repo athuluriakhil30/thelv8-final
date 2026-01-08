@@ -7,6 +7,8 @@ import { AppProviders } from '@/context/AppProviders';
 import { Toaster } from '@/components/ui/toaster';
 import { AnnouncementPopup } from '@/components/AnnouncementPopup';
 import { SeasonalAnimation } from '@/components/SeasonalAnimation';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
@@ -46,6 +48,8 @@ export default function RootLayout({
           <Footer />
           <Toaster />
           <AnnouncementPopup />
+          <Analytics />
+          <SpeedInsights />
         </AppProviders>
       </body>
     </html>
