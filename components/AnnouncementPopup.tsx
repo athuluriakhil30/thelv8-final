@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, ArrowRight, Percent } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { announcementService } from '@/services/announcement.service';
 import { useAuth } from '@/context/AuthContext';
@@ -108,9 +108,10 @@ export function AnnouncementPopup() {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden border-none shadow-2xl">
-        {/* Accessible Title (Hidden) */}
+        {/* Accessible Title and Description */}
         <VisuallyHidden>
           <DialogTitle>{announcement.title}</DialogTitle>
+          <DialogDescription>{announcement.description || announcement.content || 'Special announcement'}</DialogDescription>
         </VisuallyHidden>
 
         {/* Close button */}
