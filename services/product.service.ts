@@ -199,6 +199,37 @@ export const productService = {
   },
 
   /**
+   * Atomically decrease product stock for color+size combination
+   * Uses the check_and_deduct_stock_color_size database function
+   */
+  async decreaseStockColorSize(
+    productId: string,
+    color: string,
+    size: string,
+    quantity: number
+  ): Promise<{ success: boolean; remainingStock?: number; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('check_and_deduct_stock_color_size', {
+        p_product_id: productId,
+        p_color: color,
+        p_size: size,
+        p_quantity: quantity,
+      });
+
+      if (error) {
+        console.error('[ProductService] Error decreasing stock (color+size):', error);
+        throw error;
+      }
+
+      console.log('[ProductService] Stock decreased (color+size):', data);
+      return data as { success: boolean; remainingStock?: number; error?: string };
+    } catch (error) {
+      console.error('[ProductService] decreaseStockColorSize failed:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Atomically decrease product stock using database function
    * Prevents race conditions with row-level locking
    */
@@ -228,6 +259,37 @@ export const productService = {
       };
     } catch (error) {
       console.error('[ProductService] decreaseStock failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Atomically increase product stock for color+size combination
+   * Used for order cancellations and rollback
+   */
+  async increaseStockColorSize(
+    productId: string,
+    color: string,
+    size: string,
+    quantity: number
+  ): Promise<{ success: boolean; newStock?: number; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('increase_stock_color_size', {
+        p_product_id: productId,
+        p_color: color,
+        p_size: size,
+        p_quantity: quantity,
+      });
+
+      if (error) {
+        console.error('[ProductService] Error increasing stock (color+size):', error);
+        throw error;
+      }
+
+      console.log('[ProductService] Stock increased (color+size):', data);
+      return data as { success: boolean; newStock?: number; error?: string };
+    } catch (error) {
+      console.error('[ProductService] increaseStockColorSize failed:', error);
       throw error;
     }
   },

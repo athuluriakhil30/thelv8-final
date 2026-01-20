@@ -217,7 +217,7 @@ export default function ProductPage() {
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
-              {product.stock === 0 && (
+              {getAvailableStockForSelection() === 0 && selectedColor && selectedSize && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                   <span className="text-white font-bold text-2xl">Out of Stock</span>
                 </div>
@@ -400,10 +400,8 @@ export default function ProductPage() {
                     +
                   </button>
                   {(() => {
-                    const maxStock = selectedSize && product.stock_by_size?.[selectedSize]
-                      ? product.stock_by_size[selectedSize]
-                      : product.stock;
-                    return maxStock > 0 && (
+                    const maxStock = getAvailableStockForSelection();
+                    return maxStock > 0 && selectedColor && selectedSize && (
                       <span className="text-sm text-stone-600 ml-2">
                         {maxStock} available
                       </span>
@@ -416,11 +414,11 @@ export default function ProductPage() {
             <div className="flex gap-4 mb-8">
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={getAvailableStockForSelection() === 0 && selectedColor && selectedSize}
                 className="flex-1 px-8 py-4 bg-stone-900 text-white rounded-full hover:bg-stone-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <ShoppingCart className="w-5 h-5" />
-                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                {(getAvailableStockForSelection() === 0 && selectedColor && selectedSize) ? 'Out of Stock' : 'Add to Cart'}
               </button>
               <button
                 onClick={handleWishlistToggle}
@@ -440,11 +438,14 @@ export default function ProductPage() {
               <h3 className="font-medium text-stone-900 mb-4">Product Details</h3>
               <div className="space-y-2 text-stone-600">
                 <p><strong>SKU:</strong> {product.sku || 'N/A'}</p>
-                {product.stock > 0 && (
-                  <p><strong>Availability:</strong> In Stock ({product.stock} units)</p>
-                )}
-                {product.stock === 0 && (
-                  <p className="text-red-600"><strong>Availability:</strong> Out of Stock</p>
+                {selectedColor && selectedSize ? (
+                  getAvailableStockForSelection() > 0 ? (
+                    <p><strong>Availability:</strong> In Stock ({getAvailableStockForSelection()} units)</p>
+                  ) : (
+                    <p className="text-red-600"><strong>Availability:</strong> Out of Stock</p>
+                  )
+                ) : (
+                  <p><strong>Availability:</strong> Select color and size to check stock</p>
                 )}
               </div>
             </div>

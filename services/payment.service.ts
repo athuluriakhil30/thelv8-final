@@ -164,8 +164,8 @@ export const paymentService = {
         try {
             console.log('[PaymentService] Payment captured:', payment.id);
 
-            // Find order by Razorpay order ID
-            const order = await this.findOrderByRazorpayOrderId(payment.order_id);
+            // Find order by Razorpay order ID and payment notes
+            const order = await this.findOrderByRazorpayOrderId(payment.order_id, payment.notes);
 
             if (!order) {
                 console.error('[PaymentService] Order not found for payment:', payment.order_id);
@@ -202,7 +202,7 @@ export const paymentService = {
         try {
             console.log('[PaymentService] Payment failed:', payment.id);
 
-            const order = await this.findOrderByRazorpayOrderId(payment.order_id);
+            const order = await this.findOrderByRazorpayOrderId(payment.order_id, payment.notes);
 
             if (!order) {
                 console.error('[PaymentService] Order not found for payment:', payment.order_id);
@@ -239,7 +239,7 @@ export const paymentService = {
         try {
             console.log('[PaymentService] Payment refunded:', payment.id);
 
-            const order = await this.findOrderByRazorpayOrderId(payment.order_id);
+            const order = await this.findOrderByRazorpayOrderId(payment.order_id, payment.notes);
 
             if (!order) {
                 console.error('[PaymentService] Order not found for payment:', payment.order_id);
@@ -269,40 +269,66 @@ export const paymentService = {
     },
 
     /**
-     * Find order by Razorpay order ID
+     * Find order by Razorpay order ID or payment notes
      */
-    async findOrderByRazorpayOrderId(razorpayOrderId: string): Promise<any | null> {
+    async findOrderByRazorpayOrderId(razorpayOrderId: string, paymentNotes?: any): Promise<any | null> {
         try {
-            // First, check payment_logs to find the associated order_id
+            // Method 1: If payment notes contain order_id (most reliable for new orders)
+            if (paymentNotes?.order_id) {
+                console.log('[PaymentService] Finding order from payment notes:', paymentNotes.order_id);
+                const { data: order, error: orderError } = await supabaseAdmin
+                    .from('orders')
+                    .select('*')
+                    .eq('id', paymentNotes.order_id)
+                    .single();
+
+                if (!orderError && order) {
+                    console.log('[PaymentService] Order found via payment notes:', order.order_number);
+                    return order;
+                }
+            }
+
+            // Method 2: Search orders by Razorpay order ID directly
+            // Orders store the Razorpay order_id when they're created
+            console.log('[PaymentService] Searching orders by razorpay_order_id:', razorpayOrderId);
+            
+            // We need to search in the payment_id field or notes
+            // Since we pass Razorpay order_id when creating the order
+            const { data: orders, error: searchError } = await supabaseAdmin
+                .from('orders')
+                .select('*')
+                .or(`payment_id.eq.${razorpayOrderId},notes.ilike.%${razorpayOrderId}%`)
+                .limit(1);
+
+            if (!searchError && orders && orders.length > 0) {
+                console.log('[PaymentService] Order found via razorpay_order_id:', orders[0].order_number);
+                return orders[0];
+            }
+
+            // Method 3: Check payment_logs for historical data
             const { data: logData, error: logError } = await supabaseAdmin
                 .from('payment_logs')
                 .select('order_id')
                 .eq('razorpay_order_id', razorpayOrderId)
                 .not('order_id', 'is', null)
+                .order('created_at', { ascending: false })
+                .limit(1)
                 .single();
 
-            if (logError && logError.code !== 'PGRST116') {
-                console.error('[PaymentService] Error finding order in logs:', logError);
-            }
-
             if (logData?.order_id) {
+                console.log('[PaymentService] Order found via payment_logs:', logData.order_id);
                 const { data: order, error: orderError } = await supabaseAdmin
                     .from('orders')
                     .select('*')
                     .eq('id', logData.order_id)
                     .single();
 
-                if (orderError) {
-                    console.error('[PaymentService] Error fetching order:', orderError);
-                    return null;
+                if (!orderError && order) {
+                    return order;
                 }
-
-                return order;
             }
 
-            // Fallback: search by payment_id in notes or other fields
-            // This is less reliable but provides backup
-            console.warn('[PaymentService] Could not find order via payment_logs, implement additional lookup if needed');
+            console.error('[PaymentService] Could not find order for razorpay_order_id:', razorpayOrderId);
             return null;
         } catch (error) {
             console.error('[PaymentService] Error finding order:', error);

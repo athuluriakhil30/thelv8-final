@@ -413,6 +413,22 @@ export default function CheckoutPage() {
 
       const { order: razorpayOrder } = await razorpayOrderResponse.json();
 
+      // Update order with Razorpay order ID for webhook tracking
+      try {
+        await fetch('/api/orders', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: order.id,
+            notes: `Razorpay Order: ${razorpayOrder.id}${order.notes ? ' | ' + order.notes : ''}`,
+            payment_id: razorpayOrder.id, // Store Razorpay order_id for webhook lookup
+          }),
+        });
+      } catch (updateError) {
+        console.error('Failed to update order with Razorpay order_id:', updateError);
+        // Continue anyway, webhook will use payment notes
+      }
+
       const options: RazorpayOptions = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
         amount: razorpayOrder.amount,

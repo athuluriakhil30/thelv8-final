@@ -115,20 +115,37 @@ export const orderService = {
 
     // Step 2: Atomically decrease stock for each item
     console.log('[OrderService] Decreasing stock for items');
-    const stockResults: Array<{ productId: string; success: boolean; message: string }> = [];
+    const stockResults: Array<{ productId: string; color: string; size: string; success: boolean; message: string }> = [];
 
     try {
       for (const item of orderData.items) {
-        const result = await productService.decreaseStock(
-          item.product_id,
-          item.selected_size || null,
-          item.quantity
-        );
+        let result: { success: boolean; remainingStock?: number; error?: string; message?: string; currentStock?: number };
+        
+        // Use color+size stock deduction if both color and size are provided
+        if (item.selected_color && item.selected_size) {
+          console.log(`[OrderService] Decreasing stock for ${item.product_id} - Color: ${item.selected_color}, Size: ${item.selected_size}, Qty: ${item.quantity}`);
+          result = await productService.decreaseStockColorSize(
+            item.product_id,
+            item.selected_color,
+            item.selected_size,
+            item.quantity
+          );
+          result.message = result.error || 'Stock decreased successfully';
+        } else {
+          // Fallback to size-only stock deduction
+          result = await productService.decreaseStock(
+            item.product_id,
+            item.selected_size || null,
+            item.quantity
+          );
+        }
 
         stockResults.push({
           productId: item.product_id,
+          color: item.selected_color,
+          size: item.selected_size,
           success: result.success,
-          message: result.message,
+          message: result.message || 'Unknown error',
         });
 
         if (!result.success) {
@@ -139,11 +156,21 @@ export const orderService = {
             if (previous.success) {
               const rollbackItem = orderData.items.find(i => i.product_id === previous.productId);
               if (rollbackItem) {
-                await productService.increaseStock(
-                  rollbackItem.product_id,
-                  rollbackItem.selected_size || null,
-                  rollbackItem.quantity
-                );
+                // Use color+size stock restoration if both are available
+                if (rollbackItem.selected_color && rollbackItem.selected_size) {
+                  await productService.increaseStockColorSize(
+                    rollbackItem.product_id,
+                    rollbackItem.selected_color,
+                    rollbackItem.selected_size,
+                    rollbackItem.quantity
+                  );
+                } else {
+                  await productService.increaseStock(
+                    rollbackItem.product_id,
+                    rollbackItem.selected_size || null,
+                    rollbackItem.quantity
+                  );
+                }
               }
             }
           }
@@ -186,11 +213,20 @@ export const orderService = {
         console.error('[OrderService] Order creation failed - Rolling back stock');
 
         for (const item of orderData.items) {
-          await productService.increaseStock(
-            item.product_id,
-            item.selected_size || null,
-            item.quantity
-          );
+          if (item.selected_color && item.selected_size) {
+            await productService.increaseStockColorSize(
+              item.product_id,
+              item.selected_color,
+              item.selected_size,
+              item.quantity
+            );
+          } else {
+            await productService.increaseStock(
+              item.product_id,
+              item.selected_size || null,
+              item.quantity
+            );
+          }
         }
 
         throw error;
