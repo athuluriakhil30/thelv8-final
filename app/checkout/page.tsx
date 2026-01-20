@@ -7,6 +7,7 @@ import Script from 'next/script';
 import { Check, CreditCard, Wallet, MapPin, Plus, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase/client';
 import { addressService } from '@/services/address.service';
 import { orderService } from '@/services/order.service';
 import { productService } from '@/services/product.service';
@@ -415,15 +416,31 @@ export default function CheckoutPage() {
 
       // Update order with Razorpay order ID for webhook tracking
       try {
-        await fetch('/api/orders', {
+        // Get auth session for API request
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session?.access_token) {
+          console.error('Failed to get session for order update:', sessionError);
+          throw new Error('Authentication required');
+        }
+
+        const updateResponse = await fetch('/api/orders', {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
           body: JSON.stringify({
             orderId: order.id,
             notes: `Razorpay Order: ${razorpayOrder.id}${order.notes ? ' | ' + order.notes : ''}`,
             payment_id: razorpayOrder.id, // Store Razorpay order_id for webhook lookup
           }),
         });
+
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          console.error('Failed to update order:', errorData);
+        }
       } catch (updateError) {
         console.error('Failed to update order with Razorpay order_id:', updateError);
         // Continue anyway, webhook will use payment notes

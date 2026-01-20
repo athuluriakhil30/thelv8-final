@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,16 +10,17 @@ export const dynamic = 'force-dynamic';
  */
 export async function PATCH(request: NextRequest) {
   try {
-    // Get auth token from cookies
-    const cookieStore = await cookies();
-    const authCookie = cookieStore.get('sb-access-token');
+    // Get auth token from Authorization header
+    const authHeader = request.headers.get('authorization');
     
-    if (!authCookie) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Unauthorized - No auth token' },
         { status: 401 }
       );
     }
+
+    const token = authHeader.replace('Bearer ', '');
 
     // Create authenticated Supabase client
     const supabase = createClient(
@@ -29,14 +29,14 @@ export async function PATCH(request: NextRequest) {
       {
         global: {
           headers: {
-            Authorization: `Bearer ${authCookie.value}`,
+            Authorization: `Bearer ${token}`,
           },
         },
       }
     );
 
     // Verify user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json(
