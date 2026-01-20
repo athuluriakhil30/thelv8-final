@@ -221,8 +221,13 @@ export const productService = {
         throw error;
       }
 
-      console.log('[ProductService] Stock decreased (color+size):', data);
-      return data as { success: boolean; remainingStock?: number; error?: string };
+      const result = data[0];
+      console.log('[ProductService] Stock decreased (color+size):', result);
+      return {
+        success: result.success,
+        remainingStock: result.remaining_stock,
+        error: result.success ? undefined : result.message
+      };
     } catch (error) {
       console.error('[ProductService] decreaseStockColorSize failed:', error);
       throw error;
@@ -286,8 +291,13 @@ export const productService = {
         throw error;
       }
 
-      console.log('[ProductService] Stock increased (color+size):', data);
-      return data as { success: boolean; newStock?: number; error?: string };
+      const result = data[0];
+      console.log('[ProductService] Stock increased (color+size):', result);
+      return {
+        success: result.success,
+        newStock: result.remaining_stock,
+        error: result.success ? undefined : result.message
+      };
     } catch (error) {
       console.error('[ProductService] increaseStockColorSize failed:', error);
       throw error;
