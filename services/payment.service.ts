@@ -348,6 +348,15 @@ export const paymentService = {
             // Extract order_id from payment notes if available (Razorpay passes it back)
             const orderId = payment.notes?.order_id || null;
 
+            console.log('[PaymentService] Preparing to log payment event:', {
+                payment_id: payment.id,
+                razorpay_order_id: payment.order_id,
+                order_id: orderId,
+                event_type: eventType,
+                status: payment.status,
+                verified,
+            });
+
             const paymentLog: Omit<PaymentLog, 'id' | 'created_at'> = {
                 payment_id: payment.id,
                 razorpay_order_id: payment.order_id,
@@ -364,15 +373,24 @@ export const paymentService = {
                 verified,
             };
 
-            const { error } = await supabaseAdmin.from('payment_logs').insert(paymentLog);
+            console.log('[PaymentService] Inserting payment log into database...');
+            const { data, error } = await supabaseAdmin.from('payment_logs').insert(paymentLog).select();
 
             if (error) {
-                console.error('[PaymentService] Error logging payment event:', error);
+                console.error('[PaymentService] ❌ ERROR logging payment event:');
+                console.error('[PaymentService] Error code:', error.code);
+                console.error('[PaymentService] Error message:', error.message);
+                console.error('[PaymentService] Error details:', error.details);
+                console.error('[PaymentService] Error hint:', error.hint);
             } else {
-                console.log('[PaymentService] Payment event logged:', payment.id, 'for order:', orderId);
+                console.log('[PaymentService] ✅ Payment event logged successfully:', payment.id, 'for order:', orderId);
+                console.log('[PaymentService] Inserted record:', data?.[0]?.id);
             }
-        } catch (error) {
-            console.error('[PaymentService] Error in logPaymentEvent:', error);
+        } catch (error: any) {
+            console.error('[PaymentService] ❌ EXCEPTION in logPaymentEvent:');
+            console.error('[PaymentService] Error type:', error?.constructor?.name);
+            console.error('[PaymentService] Error message:', error?.message);
+            console.error('[PaymentService] Error stack:', error?.stack);
             // Don't throw - logging failure shouldn't break webhook processing
         }
     },

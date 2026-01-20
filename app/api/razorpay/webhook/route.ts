@@ -29,12 +29,15 @@ import { paymentService } from '@/services/payment.service';
  */
 
 export async function POST(request: NextRequest) {
+    const requestId = `wh_${Date.now()}`;
+    console.log(`[Razorpay Webhook ${requestId}] ========== NEW WEBHOOK RECEIVED ==========`);
+    
     try {
         // Get webhook secret from environment
         const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
         if (!webhookSecret) {
-            console.error('[Razorpay Webhook] RAZORPAY_WEBHOOK_SECRET not configured');
+            console.error(`[Razorpay Webhook ${requestId}] RAZORPAY_WEBHOOK_SECRET not configured`);
             return NextResponse.json(
                 { error: 'Webhook secret not configured' },
                 { status: 500 }
@@ -45,7 +48,7 @@ export async function POST(request: NextRequest) {
         const signature = request.headers.get('x-razorpay-signature');
 
         if (!signature) {
-            console.warn('[Razorpay Webhook] Missing signature header');
+            console.warn(`[Razorpay Webhook ${requestId}] Missing signature header`);
             return NextResponse.json(
                 { error: 'Missing signature header' },
                 { status: 400 }
@@ -54,6 +57,7 @@ export async function POST(request: NextRequest) {
 
         // Get raw body as text for signature verification
         const rawBody = await request.text();
+        console.log(`[Razorpay Webhook ${requestId}] Body length: ${rawBody.length} bytes`);
 
         // Verify webhook signature
         const isValid = paymentService.verifyWebhookSignature(
@@ -62,11 +66,10 @@ export async function POST(request: NextRequest) {
             webhookSecret
         );
 
+        console.log(`[Razorpay Webhook ${requestId}] Signature verification: ${isValid ? 'VALID' : 'INVALID'}`);
+
         if (!isValid) {
-            console.warn('[Razorpay Webhook] Invalid signature', {
-                signature,
-                bodyLength: rawBody.length,
-            });
+            console.warn(`[Razorpay Webhook ${requestId}] Invalid signature - REJECTING`);
             return NextResponse.json(
                 { error: 'Invalid signature' },
                 { status: 401 }
@@ -76,22 +79,30 @@ export async function POST(request: NextRequest) {
         // Parse webhook payload
         const webhookEvent = JSON.parse(rawBody);
 
-        console.log('[Razorpay Webhook] Received event:', {
+        console.log(`[Razorpay Webhook ${requestId}] Event details:`, {
             event: webhookEvent.event,
             paymentId: webhookEvent.payload?.payment?.entity?.id,
+            orderId: webhookEvent.payload?.payment?.entity?.order_id,
+            amount: webhookEvent.payload?.payment?.entity?.amount,
+            status: webhookEvent.payload?.payment?.entity?.status,
             verified: isValid,
         });
 
         // Process webhook event
+        console.log(`[Razorpay Webhook ${requestId}] Processing event...`);
         await paymentService.processWebhookEvent(webhookEvent, isValid);
+        console.log(`[Razorpay Webhook ${requestId}] Event processed successfully`);
 
         // Return success response
         return NextResponse.json(
-            { received: true, event: webhookEvent.event },
+            { received: true, event: webhookEvent.event, requestId },
             { status: 200 }
         );
     } catch (error: any) {
-        console.error('[Razorpay Webhook] Error processing webhook:', error);
+        console.error(`[Razorpay Webhook ${requestId}] ========== ERROR ==========`);
+        console.error(`[Razorpay Webhook ${requestId}] Error type:`, error?.constructor?.name);
+        console.error(`[Razorpay Webhook ${requestId}] Error message:`, error?.message);
+        console.error(`[Razorpay Webhook ${requestId}] Error stack:`, error?.stack);
 
         // Return error response but with 200 status to prevent Razorpay retries
         // Razorpay considers non-2xx responses as failures and retries
@@ -100,6 +111,7 @@ export async function POST(request: NextRequest) {
                 received: true,
                 error: 'Internal error processing webhook',
                 message: error?.message || 'Unknown error',
+                requestId,
             },
             { status: 200 }
         );
