@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase/client';
-import { getCurrentUser } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 /**
  * PATCH /api/orders
@@ -8,11 +11,36 @@ import { getCurrentUser } from '@/lib/supabase/client';
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    // Get auth token from cookies
+    const cookieStore = await cookies();
+    const authCookie = cookieStore.get('sb-access-token');
     
-    if (!user) {
+    if (!authCookie) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - No auth token' },
+        { status: 401 }
+      );
+    }
+
+    // Create authenticated Supabase client
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${authCookie.value}`,
+          },
+        },
+      }
+    );
+
+    // Verify user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid token' },
         { status: 401 }
       );
     }
@@ -27,28 +55,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Verify order belongs to user
-    const { data: existingOrder, error: fetchError } = await supabase
-      .from('orders')
-      .select('id, user_id')
-      .eq('id', orderId)
-      .single();
-
-    if (fetchError || !existingOrder) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
-    }
-
-    if (existingOrder.user_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized to update this order' },
-        { status: 403 }
-      );
-    }
-
-    // Update order
+    // Update order (RLS policies will ensure user can only update their own orders)
     const updates: any = {};
     if (notes !== undefined) updates.notes = notes;
     if (payment_id !== undefined) updates.payment_id = payment_id;
@@ -57,6 +64,7 @@ export async function PATCH(request: NextRequest) {
       .from('orders')
       .update(updates)
       .eq('id', orderId)
+      .eq('user_id', user.id) // Ensure user owns the order
       .select()
       .single();
 
@@ -65,6 +73,13 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(
         { error: 'Failed to update order' },
         { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { error: 'Order not found or unauthorized' },
+        { status: 404 }
       );
     }
 
