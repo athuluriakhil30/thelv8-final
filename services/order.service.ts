@@ -310,11 +310,23 @@ export const orderService = {
       // Restore stock for each item
       for (const item of order.order_items || order.items || []) {
         try {
-          await productService.increaseStock(
-            item.product_id,
-            item.selected_size || null,
-            item.quantity
-          );
+          // Use color+size stock restoration if both are available
+          if (item.selected_color && item.selected_size) {
+            console.log(`[OrderService] Restoring color+size stock for ${item.product_id} - Color: ${item.selected_color}, Size: ${item.selected_size}, Qty: ${item.quantity}`);
+            await productService.increaseStockColorSize(
+              item.product_id,
+              item.selected_color,
+              item.selected_size,
+              item.quantity
+            );
+          } else {
+            // Fallback to size-only stock restoration
+            await productService.increaseStock(
+              item.product_id,
+              item.selected_size || null,
+              item.quantity
+            );
+          }
           console.log('[OrderService] Stock restored for product:', item.product_id);
         } catch (error) {
           console.error('[OrderService] Failed to restore stock for', item.product_id, error);

@@ -221,12 +221,17 @@ export const productService = {
         throw error;
       }
 
-      const result = data[0];
+      if (!data) {
+        console.error('[ProductService] No data returned from check_and_deduct_stock_color_size. The database function may not exist. Please run migration 011_add_stock_by_color_size.sql');
+        throw new Error('Database function check_and_deduct_stock_color_size not available. Please contact support.');
+      }
+
+      const result = data as { success: boolean; remaining_stock?: number; error?: string };
       console.log('[ProductService] Stock decreased (color+size):', result);
       return {
         success: result.success,
         remainingStock: result.remaining_stock,
-        error: result.success ? undefined : result.message
+        error: result.success ? undefined : result.error
       };
     } catch (error) {
       console.error('[ProductService] decreaseStockColorSize failed:', error);
@@ -291,12 +296,17 @@ export const productService = {
         throw error;
       }
 
-      const result = data[0];
+      if (!data) {
+        console.error('[ProductService] No data returned from increase_stock_color_size. The database function may not exist. Please run migration 012_add_increase_stock_color_size.sql');
+        throw new Error('Database function increase_stock_color_size not available. Please contact support.');
+      }
+
+      const result = data as { success: boolean; remaining_stock?: number; error?: string };
       console.log('[ProductService] Stock increased (color+size):', result);
       return {
         success: result.success,
         newStock: result.remaining_stock,
-        error: result.success ? undefined : result.message
+        error: result.success ? undefined : result.error
       };
     } catch (error) {
       console.error('[ProductService] increaseStockColorSize failed:', error);
