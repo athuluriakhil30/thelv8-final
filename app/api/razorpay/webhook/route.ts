@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { paymentService } from '@/services/payment.service';
 
+// Disable body parsing to get raw body for signature verification
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 /**
  * Razorpay Webhook Handler
  * 
