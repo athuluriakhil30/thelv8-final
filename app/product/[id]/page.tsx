@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { productService } from '@/services/product.service';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { settingsService } from '@/services/settings.service';
 import { useAuth } from '@/context/AuthContext';
 import { formatPrice } from '@/lib/helpers';
 import { getAvailableStock, validateSingleItem } from '@/lib/cart-validation';
@@ -27,6 +28,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const hasLoadedRef = useRef<string | null>(null);
+  const [settings, setSettings] = useState({ free_shipping_threshold: 500 });
 
   const { addItem, items } = useCart();
   const { items: wishlistItems, toggleWishlist } = useWishlist();
@@ -88,6 +90,8 @@ export default function ProductPage() {
       }
 
       setProduct(productData);
+      const siteSettings = await settingsService.getSettings();
+      setSettings(siteSettings);
 
       // Set default selections
       if (productData.sizes && productData.sizes.length > 0) {
@@ -526,7 +530,7 @@ export default function ProductPage() {
                 </div>
                 <div>
                   <p className="font-medium text-stone-900 mb-1">Free Shipping</p>
-                  <p className="text-sm text-stone-600">On orders over ₹2000</p>
+                  <p className="text-sm text-stone-600">On orders over {formatPrice(settings.free_shipping_threshold)}</p>
                 </div>
               </div>
 
