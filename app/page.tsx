@@ -170,36 +170,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section - Enhanced with backdrop blur and better spacing */}
-      <section className="py-20 md:py-28 bg-white relative overflow-hidden">
-        {/* Subtle decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-100/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-stone-100/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            {[
-              { icon: Truck, title: 'Free Shipping', desc: `On orders over ${formatPrice(settings.free_shipping_threshold)}`, gradient: 'from-blue-50 to-blue-100/50' },
-              { icon: Shield, title: 'Secure Payment', desc: '100% protected checkout', gradient: 'from-emerald-50 to-emerald-100/50' },
-              { icon: Sparkles, title: 'Premium Quality', desc: 'Handpicked materials', gradient: 'from-amber-50 to-amber-100/50' }
-            ].map((feature, idx) => (
-              <div
-                key={idx}
-                className="text-center group hover:transform hover:-translate-y-3 transition-all duration-500 relative"
-              >
-                <div className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br ${feature.gradient} rounded-2xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-md group-hover:shadow-2xl relative overflow-hidden`}>
-                  {/* Shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  <feature.icon className="w-9 h-9 text-stone-700 relative z-10" strokeWidth={1.5} />
-                </div>
-                <h3 className="text-xl font-semibold text-stone-900 mb-3 tracking-tight">{feature.title}</h3>
-                <p className="text-stone-600 leading-relaxed">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Featured Products Section - Enhanced with better cards and micro-interactions */}
       {featuredProducts.length > 0 && (
         <section className="py-20 md:py-28 bg-gradient-to-b from-white via-stone-50/30 to-stone-50 relative overflow-hidden">
@@ -469,6 +439,36 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* Features Section - Enhanced with backdrop blur and better spacing */}
+      <section className="py-20 md:py-28 bg-white relative overflow-hidden">
+        {/* Subtle decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-100/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-stone-100/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            {[
+              { icon: Truck, title: 'Free Shipping', desc: `On orders over ${formatPrice(settings.free_shipping_threshold)}`, gradient: 'from-blue-50 to-blue-100/50' },
+              { icon: Shield, title: 'Secure Payment', desc: '100% protected checkout', gradient: 'from-emerald-50 to-emerald-100/50' },
+              { icon: Sparkles, title: 'Premium Quality', desc: 'Handpicked materials', gradient: 'from-amber-50 to-amber-100/50' }
+            ].map((feature, idx) => (
+              <div
+                key={idx}
+                className="text-center group hover:transform hover:-translate-y-3 transition-all duration-500 relative"
+              >
+                <div className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br ${feature.gradient} rounded-2xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-md group-hover:shadow-2xl relative overflow-hidden`}>
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  <feature.icon className="w-9 h-9 text-stone-700 relative z-10" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-xl font-semibold text-stone-900 mb-3 tracking-tight">{feature.title}</h3>
+                <p className="text-stone-600 leading-relaxed">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Newsletter Section - Enhanced with modern gradients and better visual hierarchy */}
       <section className="py-20 md:py-28 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 text-white relative overflow-hidden">
