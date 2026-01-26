@@ -285,8 +285,8 @@ export default function CartPage() {
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3 bg-stone-100 rounded-full p-1">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                      <div className="flex items-center gap-3 bg-stone-100 rounded-full p-1 w-fit">
                         <button
                           onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                           disabled={item.quantity <= 1}
@@ -304,8 +304,8 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      <div className="text-right">
-                        <p className="text-2xl font-light text-stone-900">
+                      <div className="text-left sm:text-right">
+                        <p className="text-xl sm:text-2xl font-light text-stone-900 break-words">
                           {formatPrice(item.product.price * item.quantity)}
                         </p>
                         {item.quantity > 1 && (

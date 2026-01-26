@@ -733,23 +733,23 @@ export default function CheckoutPage() {
                             onChange={(e) => setSelectedAddressId(e.target.value)}
                             className="mt-1"
                           />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <p className="font-medium text-stone-900">{address.full_name}</p>
-                              <span className="px-3 py-1 bg-stone-200 text-stone-700 text-xs rounded-full capitalize">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <p className="font-medium text-stone-900 break-words">{address.full_name}</p>
+                              <span className="px-3 py-1 bg-stone-200 text-stone-700 text-xs rounded-full capitalize flex-shrink-0">
                                 {address.address_type}
                               </span>
                               {address.is_default && (
-                                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">
+                                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs rounded-full flex-shrink-0">
                                   Default
                                 </span>
                               )}
                             </div>
-                            <p className="text-stone-600">{address.street_address}</p>
-                            <p className="text-stone-600">
+                            <p className="text-stone-600 break-words">{address.street_address}</p>
+                            <p className="text-stone-600 break-words">
                               {address.city}, {address.state} - {address.pincode}
                             </p>
-                            <p className="text-stone-600">Phone: {address.phone}</p>
+                            <p className="text-stone-600 break-words">Phone: {address.phone}</p>
                           </div>
                         </div>
                       </label>
@@ -873,19 +873,19 @@ export default function CheckoutPage() {
                 <div className="border-t border-stone-200 pt-4 mb-6">
                   <h3 className="text-sm font-medium text-stone-900 mb-3">Have a coupon?</h3>
                   {!appliedCoupon ? (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 sm:gap-3">
                       <input
                         type="text"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         placeholder="Enter coupon code"
-                        className="flex-1 px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 text-sm"
+                        className="flex-1 min-w-0 px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900 text-sm"
                         disabled={applyingCoupon}
                       />
                       <button
                         onClick={handleApplyCoupon}
                         disabled={applyingCoupon || !couponCode.trim()}
-                        className="px-4 py-2 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 sm:px-6 py-2 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                       >
                         {applyingCoupon ? 'Applying...' : 'Apply'}
                       </button>
