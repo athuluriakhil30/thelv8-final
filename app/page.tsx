@@ -178,31 +178,87 @@ export default function Home() {
             <p className="text-stone-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">Find your perfect style</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { name: 'Men', image: '/api/placeholder/400/500', href: '/shop?category=men' },
-              { name: 'Women', image: '/api/placeholder/400/500', href: '/shop?category=women' },
-              { name: 'Accessories', image: '/api/placeholder/400/500', href: '/shop?category=accessories' },
-              { name: 'New Season', image: '/api/placeholder/400/500', href: '/new-arrivals' }
-            ].map((category, idx) => (
-              <Link
-                key={idx}
-                href={category.href}
-                className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] shadow-lg hover:shadow-2xl transition-all duration-500"
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
-                <div className="absolute inset-0 bg-stone-300 flex items-center justify-center">
-                  <Package className="w-16 h-16 text-stone-500" strokeWidth={1} />
+          {/* Custom Category Grid - Men & Women tall, Acc & New Season wide horizontal */}
+          <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-4 md:gap-6">
+            {/* First Card - Men (Tall, spans 2 rows) */}
+            <Link
+              href="/shop?category=men"
+              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-auto md:row-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
+            >
+              <img
+                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/men.jpg"
+                alt="Men's Collection"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
+                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">Men</h3>
+                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                  <span className="text-sm md:text-base font-medium">Shop Now</span>
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
-                  <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">{category.name}</h3>
-                  <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                    <span className="text-sm md:text-base font-medium">Shop Now</span>
-                    <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
-                  </div>
+              </div>
+            </Link>
+
+            {/* Second Card - Women (Tall, spans 2 rows) */}
+            <Link
+              href="/shop?category=women"
+              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-auto md:row-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
+            >
+              <img
+                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/women.jpg"
+                alt="Women's Collection"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
+                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">Women</h3>
+                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                  <span className="text-sm md:text-base font-medium">Shop Now</span>
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
                 </div>
-              </Link>
-            ))}
+              </div>
+            </Link>
+
+            {/* Third Card - Accessories (Wide horizontal, spans 2 columns, 1 row - top right) */}
+            <Link
+              href="/shop?category=accessories"
+              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-[2/1] md:col-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
+            >
+              <img
+                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/accessories.png"
+                alt="Accessories Collection"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
+                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">Accessories</h3>
+                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                  <span className="text-sm md:text-base font-medium">Shop Now</span>
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
+                </div>
+              </div>
+            </Link>
+
+            {/* Fourth Card - New Season (Wide horizontal, spans 2 columns, 1 row - bottom right) */}
+            <Link
+              href="/new-arrivals"
+              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-[2/1] md:col-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
+            >
+              <img
+                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/new-season.png"
+                alt="New Season Collection"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
+                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">New Season</h3>
+                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                  <span className="text-sm md:text-base font-medium">Shop Now</span>
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </section>

@@ -17,6 +17,7 @@ import type { Product, Category } from '@/types';
 function ShopPageContent() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('search');
+  const categoryParam = searchParams.get('category');
   
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,6 +30,23 @@ function ShopPageContent() {
   const { addItem } = useCart();
   const { items: wishlistItems, toggleWishlist } = useWishlist();
   const { user } = useAuth();
+
+  // Set category from URL parameter on mount - handle both slug and ID
+  useEffect(() => {
+    if (categoryParam && categories.length > 0) {
+      // Try to find category by slug first (for URLs like ?category=accessories)
+      const categoryBySlug = categories.find(cat => cat.slug === categoryParam);
+      if (categoryBySlug) {
+        setSelectedCategory(categoryBySlug.id);
+      } else {
+        // Fallback to ID if slug not found
+        const categoryById = categories.find(cat => cat.id === categoryParam);
+        if (categoryById) {
+          setSelectedCategory(categoryParam);
+        }
+      }
+    }
+  }, [categoryParam, categories]);
 
   useEffect(() => {
     loadInitialData();
