@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAIResponse, isWithinScope } from '@/lib/gemini-client';
+import { generateAIResponse, isWithinScope } from '@/lib/ai-client';
 import { 
   getUserContext, 
   formatContextForAI, 

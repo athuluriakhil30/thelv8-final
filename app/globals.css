@@ -21,14 +21,14 @@ html {
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-start-rgb));
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-playfair), serif;
-  font-weight: 300;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 400;
   letter-spacing: -0.02em;
 }
 

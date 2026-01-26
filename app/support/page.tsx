@@ -5,7 +5,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Send, Bot, User, Loader2, AlertCircle, Ticket, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { generateSuggestions } from '@/lib/gemini-client';
+import { generateSuggestions } from '@/lib/ai-client';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -296,7 +298,15 @@ export default function ChatbotPage() {
                           : 'bg-stone-100 text-stone-900'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {message.role === 'assistant' ? (
+                        <div className="text-sm prose prose-sm max-w-none prose-headings:font-semibold prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:font-bold prose-strong:text-stone-900">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      )}
                       <span className="text-xs opacity-60 mt-2 block">
                         {message.timestamp.toLocaleTimeString()}
                       </span>

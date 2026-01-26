@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { AppProviders } from '@/context/AppProviders';
@@ -10,8 +10,7 @@ import { SeasonalAnimation } from '@/components/SeasonalAnimation';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 export const metadata: Metadata = {
   title: 'thelv8 - Elevate Your Style',
@@ -39,8 +38,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
+      <body className={spaceGrotesk.className}>
         <AppProviders>
           <SeasonalAnimation />
           <Navigation />

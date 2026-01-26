@@ -1,19 +1,22 @@
 /**
- * Google Gemini AI Client
- * Handles communication with Google Gemini API for chatbot functionality
+ * AI Client (GitHub Models)
+ * Handles communication with GitHub Models API for chatbot functionality
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 
-// Initialize Gemini AI client
-const getGeminiClient = () => {
-  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+// Initialize GitHub Models client
+const getGitHubModelsClient = () => {
+  const token = process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
   
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured');
+  if (!token) {
+    throw new Error('GITHUB_TOKEN is not configured');
   }
   
-  return new GoogleGenerativeAI(apiKey);
+  return new OpenAI({ 
+    baseURL: 'https://models.github.ai/inference', 
+    apiKey: token 
+  });
 };
 
 export interface ChatMessage {
@@ -32,7 +35,7 @@ export interface ChatContext {
 }
 
 /**
- * Generate AI response using Gemini with retry logic
+ * Generate AI response using GitHub Models with retry logic
  */
 export async function generateAIResponse(
   userMessage: string,
@@ -40,39 +43,55 @@ export async function generateAIResponse(
 ): Promise<string> {
   const maxRetries = 3;
   const retryDelay = 2000; // 2 seconds
+  const modelName = 'openai/gpt-4o-mini';
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const genAI = getGeminiClient();
-      const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        },
+      const client = getGitHubModelsClient();
+
+      // Build context-aware system prompt
+      const systemPrompt = buildSystemPrompt(context);
+      
+      // Build conversation history with system prompt
+      const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+        { role: 'system', content: systemPrompt }
+      ];
+      
+      // Add conversation history
+      context.conversationHistory.forEach((msg) => {
+        messages.push({
+          role: msg.role === 'assistant' ? 'assistant' : 'user',
+          content: msg.content
+        });
+      });
+      
+      // Add current user message
+      messages.push({
+        role: 'user',
+        content: userMessage
       });
 
-      // Build context-aware prompt
-      const systemPrompt = buildSystemPrompt(context);
-      const fullPrompt = `${systemPrompt}\n\nUser Query: ${userMessage}\n\nAssistant:`;
+      const response = await client.chat.completions.create({
+        messages,
+        temperature: 0.7,
+        top_p: 0.95,
+        max_tokens: 1024,
+        model: modelName
+      });
 
-      const result = await model.generateContent(fullPrompt);
-      const response = await result.response;
-      return response.text();
+      return response.choices[0]?.message?.content || 'I apologize, but I couldn\'t generate a response. Please try again.';
       
     } catch (error: any) {
-      console.error(`[GeminiClient] Attempt ${attempt}/${maxRetries} failed:`, error);
+      console.error(`[GitHubModels] Attempt ${attempt}/${maxRetries} failed:`, error);
       
       // Check for specific error types
       const is503 = error?.status === 503 || error?.message?.includes('503') || error?.message?.includes('overloaded');
-      const is429 = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('quota');
+      const is429 = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('quota') || error?.message?.includes('rate limit');
       
       // If it's a rate limit or overload error and we have retries left, wait and retry
       if ((is503 || is429) && attempt < maxRetries) {
         const waitTime = retryDelay * attempt; // Exponential backoff
-        console.log(`[GeminiClient] Retrying in ${waitTime}ms...`);
+        console.log(`[GitHubModels] Retrying in ${waitTime}ms...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         continue;
       }
@@ -82,7 +101,7 @@ export async function generateAIResponse(
         throw new Error('The AI service is currently experiencing high demand. Please try again in a moment.');
       } else if (is429) {
         throw new Error('API rate limit reached. Please wait a moment before trying again.');
-      } else if (error?.message?.includes('API key')) {
+      } else if (error?.message?.includes('API key') || error?.message?.includes('token')) {
         throw new Error('AI service configuration error. Please contact support.');
       } else {
         throw new Error('Unable to process your request at the moment. Please try again or create a support ticket.');
