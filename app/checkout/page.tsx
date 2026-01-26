@@ -270,6 +270,15 @@ export default function CheckoutPage() {
       const discount = couponDiscount;
       const total = subtotal + tax + shippingCharge - discount;
 
+      console.log('Order calculation:', { subtotal, tax, shippingCharge, discount, total });
+
+      // Enforce minimum order amount for Razorpay (₹1.00)
+      if (paymentMethod === 'razorpay' && total < 1) {
+        toast.error('Minimum order amount is ₹1 for online payment. Please add more items or use Cash on Delivery.');
+        setProcessing(false);
+        return;
+      }
+
       const orderItems = cartItems.map(item => ({
         product_id: item.product_id,
         product_name: item.product.name,
@@ -409,7 +418,9 @@ export default function CheckoutPage() {
       });
 
       if (!razorpayOrderResponse.ok) {
-        throw new Error('Failed to create Razorpay order');
+        const errorData = await razorpayOrderResponse.json();
+        console.error('Razorpay error:', errorData);
+        throw new Error(errorData.details || errorData.error || 'Failed to create Razorpay order');
       }
 
       const { order: razorpayOrder } = await razorpayOrderResponse.json();
