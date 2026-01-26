@@ -8,7 +8,11 @@ CREATE OR REPLACE FUNCTION increase_stock_color_size(
   p_size TEXT,
   p_quantity INTEGER
 )
-RETURNS JSONB AS $$
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   v_product RECORD;
   v_current_stock INTEGER;
@@ -67,7 +71,7 @@ BEGIN
     'previous_stock', v_current_stock
   );
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION increase_stock_color_size(UUID, TEXT, TEXT, INTEGER) TO authenticated, service_role;

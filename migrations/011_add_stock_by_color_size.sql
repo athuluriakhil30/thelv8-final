@@ -98,7 +98,11 @@ CREATE OR REPLACE FUNCTION check_and_deduct_stock_color_size(
   p_size TEXT,
   p_quantity INTEGER
 )
-RETURNS JSONB AS $$
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   v_product RECORD;
   v_available_stock INTEGER;
@@ -159,7 +163,7 @@ BEGIN
     'remaining_stock', v_available_stock - p_quantity
   );
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION calculate_total_stock_from_color_size(JSONB) TO authenticated, service_role;

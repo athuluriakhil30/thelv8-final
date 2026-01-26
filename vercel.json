@@ -3,6 +3,10 @@
     "app/api/razorpay/webhook/route.ts": {
       "memory": 1024,
       "maxDuration": 10
+    },
+    "app/api/razorpay/create-order/route.ts": {
+      "memory": 1024,
+      "maxDuration": 10
     }
   },
   "headers": [
