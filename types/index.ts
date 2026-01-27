@@ -106,6 +106,7 @@ export interface Order {
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   payment_method: 'razorpay' | 'cod';
   payment_id?: string | null;
+  razorpay_order_id?: string | null; // Razorpay order ID for webhook reconciliation
   subtotal: number;
   shipping_charge: number;
   tax: number;

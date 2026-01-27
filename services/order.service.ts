@@ -289,6 +289,19 @@ export const orderService = {
     return data as unknown as Order;
   },
 
+  // Update Razorpay order ID for webhook reconciliation
+  async updateRazorpayOrderId(orderId: string, razorpayOrderId: string) {
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ razorpay_order_id: razorpayOrderId } as any)
+      .eq('id', orderId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as unknown as Order;
+  },
+
   // Cancel order
   async cancelOrder(orderId: string, reason?: string) {
     // Import product service for stock operations

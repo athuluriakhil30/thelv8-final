@@ -198,6 +198,49 @@ export default function CheckoutPage() {
     toast.success('Coupon removed');
   }
 
+  // ✅ FIX: Add retry logic for network failures (mobile optimization)
+  async function createRazorpayOrderWithRetry(orderData: any, retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`[Checkout] Razorpay order creation attempt ${attempt}/${retries}`);
+        
+        const response = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData),
+        });
+
+        if (response.ok) {
+          return await response.json();
+        }
+
+        // If not last attempt and got server error, retry
+        if (attempt < retries && response.status >= 500) {
+          const waitTime = 1000 * attempt; // Exponential backoff: 1s, 2s, 3s
+          console.log(`[Checkout] Server error, retrying in ${waitTime}ms...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+
+        // Non-retryable error or last attempt
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Payment gateway error');
+      } catch (error: any) {
+        // Network error - retry if not last attempt
+        if (attempt < retries && (error.name === 'TypeError' || error.message.includes('fetch'))) {
+          const waitTime = 1000 * attempt;
+          console.log(`[Checkout] Network error, retrying in ${waitTime}ms...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+        
+        // Last attempt or non-network error
+        throw error;
+      }
+    }
+    throw new Error('Failed to create payment order after multiple attempts');
+  }
+
   async function handleAddAddress() {
     if (!user) return;
 
@@ -285,9 +328,9 @@ export default function CheckoutPage() {
 
       console.log('Order calculation:', { subtotal, tax, shippingCharge, discount, total });
 
-      // Enforce minimum order amount for Razorpay (₹1.00)
-      if (paymentMethod === 'razorpay' && total < 1) {
-        toast.error('Minimum order amount is ₹1 for online payment. Please add more items or use Cash on Delivery.');
+      // ✅ FIX: Enforce minimum order amount for Razorpay (must be > ₹0)
+      if (paymentMethod === 'razorpay' && total <= 0) {
+        toast.error('Order total must be greater than ₹0 for online payment. Please adjust your cart.');
         setProcessing(false);
         return;
       }
@@ -439,11 +482,10 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Create Razorpay order
-      const razorpayOrderResponse = await fetch('/api/razorpay/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // ✅ FIX: Create Razorpay order with retry logic for network resilience
+      let razorpayOrderData;
+      try {
+        razorpayOrderData = await createRazorpayOrderWithRetry({
           amount: order.total,
           currency: 'INR',
           receipt: order.order_number,
@@ -451,19 +493,24 @@ export default function CheckoutPage() {
             order_id: order.id,
             order_number: order.order_number,
           },
-        }),
-      });
-
-      if (!razorpayOrderResponse.ok) {
-        const errorData = await razorpayOrderResponse.json();
-        console.error('Razorpay order creation failed:', errorData);
+        });
+      } catch (error: any) {
+        console.error('Razorpay order creation failed after retries:', error);
         
         // ✅ CRITICAL: Cancel database order to restore stock
         try {
-          await orderService.cancelOrder(order.id, 'Razorpay order creation failed');
-          toast.error('Payment gateway error. Your cart has been restored. Please try again.', {
-            duration: 6000
-          });
+          await orderService.cancelOrder(order.id, 'Razorpay order creation failed: ' + error.message);
+          
+          // Show user-friendly error based on error type
+          if (error.name === 'TypeError' || error.message.includes('fetch')) {
+            toast.error('Network error. Please check your connection and try again.', {
+              duration: 6000
+            });
+          } else {
+            toast.error('Payment gateway error. Your cart has been restored. Please try again.', {
+              duration: 6000
+            });
+          }
         } catch (cancelError) {
           console.error('Failed to cancel order after Razorpay error:', cancelError);
           toast.error('Payment error. Please contact support with order #' + order.order_number, {
@@ -475,11 +522,16 @@ export default function CheckoutPage() {
         return;
       }
 
-      const { order: razorpayOrder } = await razorpayOrderResponse.json();
+      const { order: razorpayOrder } = razorpayOrderData;
 
-      // ✅ OPTIMIZATION: Removed order update API call (saves ~400ms)
-      // Webhook already has order_id in razorpayOrder.notes, so this update is redundant
-      console.log('[Checkout] Razorpay order created:', razorpayOrder.id, 'for order:', order.id);
+      // ✅ FIX: Store razorpay_order_id for webhook reconciliation
+      try {
+        await orderService.updateRazorpayOrderId(order.id, razorpayOrder.id);
+        console.log('[Checkout] Razorpay order ID stored:', razorpayOrder.id, 'for order:', order.id);
+      } catch (updateError) {
+        console.error('[Checkout] Failed to store razorpay_order_id:', updateError);
+        // Non-critical - webhook can still use fallback methods
+      }
 
       const options: RazorpayOptions = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
