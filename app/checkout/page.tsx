@@ -688,7 +688,70 @@ export default function CheckoutPage() {
         setProcessing(false);
       });
 
-      razorpay.open();
+      // ✅ NEW: Add error boundary for Razorpay internal errors (like 500 server errors)
+      // This catches errors that happen during razorpay.open() or internal API calls
+      let razorpayOpened = false;
+      let errorTimeout: NodeJS.Timeout | undefined;
+      
+      try {
+        razorpay.open();
+        razorpayOpened = true;
+        
+        // ✅ Monitor for Razorpay 500 errors (they don't trigger payment.failed event)
+        // If modal doesn't appear within 10 seconds, likely a server error occurred
+        errorTimeout = setTimeout(async () => {
+          if (razorpayOpened && processing) {
+            console.error('[Checkout] Razorpay modal timeout - likely server error (500)');
+            setShowPaymentLoader(false);
+            
+            // Check if order needs to be cancelled
+            try {
+              // Give time for any pending webhooks to arrive (in case payment actually succeeded)
+              console.log('[Checkout] Waiting 5s for potential webhook...');
+              await new Promise(resolve => setTimeout(resolve, 5000));
+              
+              // Check if webhook updated the order
+              const updatedOrder = await orderService.getOrderById(order.id);
+              
+              if (updatedOrder && updatedOrder.payment_status === 'paid') {
+                console.log('[Checkout] Payment was actually successful via webhook!');
+                await clearCart();
+                router.push(`/order-success/${order.id}`);
+                toast.success('Payment successful! Order placed.');
+              } else {
+                // No webhook received, cancel order
+                console.log('[Checkout] No webhook received, cancelling order');
+                await orderService.cancelOrder(order.id, 'Razorpay server error (timeout)');
+                toast.error('Payment gateway error (server timeout). Your cart has been restored. Please try again.', { 
+                  duration: 8000 
+                });
+              }
+            } catch (error) {
+              console.error('[Checkout] Error handling timeout:', error);
+              toast.error('Payment gateway error. Please check your order history or contact support.', { 
+                duration: 8000 
+              });
+            }
+            
+            setProcessing(false);
+          }
+        }, 10000); // 10 second timeout
+      } catch (openError) {
+        console.error('[Checkout] Error opening Razorpay modal:', openError);
+        razorpayOpened = false;
+        if (errorTimeout) clearTimeout(errorTimeout);
+        setShowPaymentLoader(false);
+        
+        try {
+          await orderService.cancelOrder(order.id, 'Razorpay modal open error');
+          toast.error('Failed to open payment gateway. Your cart has been restored.', { duration: 6000 });
+        } catch (cancelError) {
+          console.error('[Checkout] Error cancelling order after modal error:', cancelError);
+          toast.error('Payment gateway error. Please contact support.', { duration: 8000 });
+        }
+        
+        setProcessing(false);
+      }
       
       // Hide loader after a short delay (modal takes ~200ms to appear)
       setTimeout(() => {
