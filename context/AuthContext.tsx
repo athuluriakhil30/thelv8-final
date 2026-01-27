@@ -138,9 +138,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         console.log('[AuthContext] Auth event:', event);
         
+        // Skip profile fetch for INITIAL_SESSION - already handled in initializeAuth
+        if (event === 'INITIAL_SESSION') {
+          console.log('[AuthContext] Initial session - skipping duplicate profile fetch');
+          return;
+        }
+        
         // Handle token expiration
         if (event === 'TOKEN_REFRESHED') {
           console.log('[AuthContext] Token refreshed successfully');
+          return; // Don't refetch profile on token refresh
         } else if (event === 'SIGNED_OUT') {
           console.log('[AuthContext] User signed out');
           setSession(null);
@@ -148,6 +155,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null);
           setIsAdmin(false);
           return;
+        }
+        
+        // Only fetch profile for SIGNED_IN event
+        if (event === 'SIGNED_IN') {
+          console.log('[AuthContext] User signed in, fetching profile...');
         }
         
         setSession(session);
