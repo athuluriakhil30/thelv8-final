@@ -21,13 +21,12 @@ export const settingsService = {
   // Get all settings
   async getSettings(): Promise<SiteSettings> {
     try {
-      const { data, error } = await withTimeout(
-        supabase
-          .from('settings' as any)
-          .select('*')
-          .single(),
-        10000
-      );
+      const query = supabase
+        .from('settings' as any)
+        .select('*')
+        .single();
+      
+      const { data, error } = await withTimeout(query, 10000);
 
       if (error) {
         console.warn('[SettingsService] Error fetching settings, using defaults:', error);
