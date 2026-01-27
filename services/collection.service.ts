@@ -35,15 +35,19 @@ export const collectionService = {
 
   // Get featured collections
   async getFeaturedCollections(): Promise<Collection[]> {
-    const { data, error } = await withTimeout(
-      supabase
-        .from('collections' as any)
-        .select('*')
-        .eq('published', true)
-        .eq('featured', true)
-        .order('name'),
+    const result = await withTimeout(
+      Promise.resolve(
+        supabase
+          .from('collections' as any)
+          .select('*')
+          .eq('published', true)
+          .eq('featured', true)
+          .order('name')
+      ),
       10000
     );
+
+    const { data, error } = result as any;
 
     if (error) {
       console.error('[CollectionService] Error fetching featured collections:', error);

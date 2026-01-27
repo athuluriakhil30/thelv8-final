@@ -58,7 +58,8 @@ export const productService = {
 
     query = query.range(offset, offset + limit - 1);
 
-    const { data, error, count } = await withTimeout(query, 10000);
+    const result = await withTimeout(Promise.resolve(query), 10000);
+    const { data, error, count } = result as any;
 
     if (error) {
       console.error('[ProductService] Error fetching products:', error);
