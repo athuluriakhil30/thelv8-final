@@ -26,7 +26,6 @@ export default function Home() {
   const { user } = useAuth();
   const { items: wishlistItems, toggleWishlist } = useWishlist();
   const [animationData, setAnimationData] = useState(null);
-  const [mobileAnimationData, setMobileAnimationData] = useState(null);
 
   useEffect(() => {
     if (!hasLoaded.current) {
@@ -35,7 +34,7 @@ export default function Home() {
     }
   }, []);
 
-  // Load Lottie animations - Update the paths to match your file locations
+  // Load Lottie animation for desktop only
   useEffect(() => {
     // Desktop animation
     fetch('/animations/hero.json') // Change this to your desktop Lottie file path
@@ -46,17 +45,6 @@ export default function Home() {
       .then(data => setAnimationData(data))
       .catch(err => {
         console.log('Desktop Lottie animation not loaded:', err.message);
-      });
-
-    // Mobile animation
-    fetch('/animations/mobile.json') // Change this to your mobile Lottie file path
-      .then(res => {
-        if (!res.ok) throw new Error('Mobile animation file not found');
-        return res.json();
-      })
-      .then(data => setMobileAnimationData(data))
-      .catch(err => {
-        console.log('Mobile Lottie animation not loaded:', err.message);
       });
   }, []);
 
@@ -99,69 +87,56 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-stone-50 via-amber-50 to-stone-100">
-        {/* Mobile Lottie Animation Background */}
-        {mobileAnimationData && (
-          <div 
-            className="md:hidden absolute inset-0 z-0"
-            style={{
-              width: '100vw',
-              height: '100vh',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
+        {/* Mobile Video Background */}
+        <div className="md:hidden absolute inset-0 z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
           >
-            <div 
-              className="w-[300vw] h-[300vh]"
-              style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Lottie 
-                animationData={mobileAnimationData} 
-                loop={true}
-                style={{ 
-                  width: '100%',
-                  height: '100%'
-                }}
-              />
-            </div>
-          </div>
-        )}
+            <source src="/animations/mobile-hero.mp4" type="video/mp4" />
+            {/* Add additional video formats for better browser compatibility */}
+            <source src="/animations/mobile-hero.webm" type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
+          {/* Optional overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/10"></div>
+        </div>
 
         {/* Desktop Lottie Animation Background */}
-        {animationData && (
-          <div 
-            className="hidden md:block absolute inset-0 z-0"
-            style={{
-              width: '100vw',
-              height: '100vh',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
+        <div className="hidden md:block absolute inset-0 z-0">
+          {animationData && (
             <div 
-              className="w-[200vw] h-[200vh]"
-              style={{ 
+              style={{
+                width: '100vw',
+                height: '100vh',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
             >
-              <Lottie 
-                animationData={animationData} 
-                loop={true}
+              <div 
+                className="w-[200vw] h-[200vh]"
                 style={{ 
-                  width: '100%',
-                  height: '100%'
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
-              />
+              >
+                <Lottie 
+                  animationData={animationData} 
+                  loop={true}
+                  style={{ 
+                    width: '100%',
+                    height: '100%'
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 border-2 border-stone-400 rounded-full flex items-start justify-center p-2">
