@@ -313,7 +313,7 @@ export const paymentService = {
                 .not('order_id', 'is', null)
                 .order('created_at', { ascending: false })
                 .limit(1)
-                .single();
+                .maybeSingle(); // ✅ Fix: Use maybeSingle() to avoid throwing error when no logs found
 
             if (logData?.order_id) {
                 console.log('[PaymentService] Order found via payment_logs:', logData.order_id);

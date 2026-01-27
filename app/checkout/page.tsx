@@ -37,6 +37,18 @@ interface RazorpayOptions {
   };
   theme: {
     color: string;
+    backdrop_color?: string;
+    hide_topbar?: boolean;
+  };
+  modal?: {
+    ondismiss?: () => void;
+    escape?: boolean;
+    animation?: boolean;
+    confirm_close?: boolean;
+  };
+  retry?: {
+    enabled: boolean;
+    max_count: number;
   };
 }
 
@@ -386,8 +398,20 @@ export default function CheckoutPage() {
         } else {
           toast.error('Some items do not have sufficient stock. Please reduce quantities and try again.');
         }
+      } else if (error?.message && error.message.includes('Network')) {
+        // Network failure during order creation
+        toast.error('Network error. Please check your connection and try again.', {
+          duration: 5000,
+        });
+      } else if (error?.message && error.message.includes('Payment gateway')) {
+        // Payment gateway errors (already handled with order cancellation)
+        // Error already shown via toast in the catch blocks above
+        console.log('[Checkout] Payment gateway error handled');
       } else {
-        toast.error(error?.message || 'Failed to place order. Please try again.');
+        // Generic error
+        toast.error(error?.message || 'Failed to place order. Please try again.', {
+          duration: 5000,
+        });
       }
 
       setProcessing(false);
@@ -397,7 +421,19 @@ export default function CheckoutPage() {
   async function handleRazorpayPayment(order: any, selectedAddress: Address) {
     try {
       if (!window.Razorpay) {
-        toast.error('Payment gateway not loaded. Please refresh and try again.');
+        toast.error('Payment gateway not loaded. Cancelling order...');
+        
+        // ✅ CRITICAL: Cancel the order that was just created to restore stock
+        try {
+          await orderService.cancelOrder(order.id, 'Payment gateway not available');
+          toast.error('Payment gateway not loaded. Your cart has been restored. Please refresh and try again.', {
+            duration: 6000
+          });
+        } catch (cancelError) {
+          console.error('Failed to cancel order after gateway load failure:', cancelError);
+          toast.error('Payment gateway error. Please contact support.', { duration: 8000 });
+        }
+        
         setProcessing(false);
         return;
       }
@@ -419,8 +455,23 @@ export default function CheckoutPage() {
 
       if (!razorpayOrderResponse.ok) {
         const errorData = await razorpayOrderResponse.json();
-        console.error('Razorpay error:', errorData);
-        throw new Error(errorData.details || errorData.error || 'Failed to create Razorpay order');
+        console.error('Razorpay order creation failed:', errorData);
+        
+        // ✅ CRITICAL: Cancel database order to restore stock
+        try {
+          await orderService.cancelOrder(order.id, 'Razorpay order creation failed');
+          toast.error('Payment gateway error. Your cart has been restored. Please try again.', {
+            duration: 6000
+          });
+        } catch (cancelError) {
+          console.error('Failed to cancel order after Razorpay error:', cancelError);
+          toast.error('Payment error. Please contact support with order #' + order.order_number, {
+            duration: 8000
+          });
+        }
+        
+        setProcessing(false);
+        return;
       }
 
       const { order: razorpayOrder } = await razorpayOrderResponse.json();
@@ -464,6 +515,36 @@ export default function CheckoutPage() {
         name: 'The LV8',
         description: `Order #${order.order_number}`,
         order_id: razorpayOrder.id, // Use Razorpay order ID
+        
+        // ✅ Mobile optimizations
+        modal: {
+          ondismiss: async function() {
+            console.log('[Checkout] User dismissed payment modal');
+            
+            // ✅ CRITICAL: Cancel order and restore stock when user closes modal
+            try {
+              await orderService.cancelOrder(order.id, 'Payment cancelled by user');
+              console.log('[Checkout] Order cancelled and stock restored after modal dismissal');
+              toast.info('Payment cancelled. Your cart has been restored.', { duration: 5000 });
+            } catch (cancelError) {
+              console.error('[Checkout] Error cancelling order after dismissal:', cancelError);
+              toast.error('Payment cancelled. Please check your orders or contact support.', { duration: 6000 });
+            }
+            
+            setProcessing(false);
+            setPaymentError(null);
+          },
+          escape: false, // Prevent accidental closure with ESC key
+          animation: true, // Smooth animations for better mobile UX
+          confirm_close: true, // Ask for confirmation before closing
+        },
+        
+        // ✅ Better error handling with retry
+        retry: {
+          enabled: true,
+          max_count: 3,
+        },
+        
         handler: async function (response: any) {
           try {
             // Payment successful
@@ -526,10 +607,25 @@ export default function CheckoutPage() {
         },
         theme: {
           color: '#f59e0b',
+          backdrop_color: 'rgba(0, 0, 0, 0.8)', // Better visibility on mobile
+          hide_topbar: false, // Keep branding visible
         },
       };
 
       const razorpay = new window.Razorpay(options);
+
+      // ✅ Handle any errors during Razorpay initialization
+      if (!razorpay) {
+        console.error('[Checkout] Failed to initialize Razorpay');
+        try {
+          await orderService.cancelOrder(order.id, 'Razorpay initialization failed');
+          toast.error('Payment gateway error. Your cart has been restored.', { duration: 6000 });
+        } catch (cancelError) {
+          console.error('Failed to cancel order:', cancelError);
+        }
+        setProcessing(false);
+        return;
+      }
 
       razorpay.on('payment.failed', async function (response: any) {
         console.error('Payment failed:', response.error);
@@ -552,14 +648,16 @@ export default function CheckoutPage() {
 
         setPaymentError(errorMessage);
 
-        // Cancel the order since payment failed
+        // ✅ CRITICAL: Cancel the order and restore stock
         try {
           await orderService.cancelOrder(order.id, 'Payment failed: ' + errorReason);
+          console.log('[Checkout] Order cancelled and stock restored after payment failure');
+          toast.error(errorMessage + ' Your cart has been restored.', { duration: 6000 });
         } catch (cancelError) {
-          console.error('Error cancelling order:', cancelError);
+          console.error('[Checkout] Error cancelling order after payment failure:', cancelError);
+          toast.error(errorMessage + ' Please contact support to restore your cart.', { duration: 8000 });
         }
 
-        toast.error(errorMessage, { duration: 6000 });
         setProcessing(false);
       });
 
@@ -817,7 +915,7 @@ export default function CheckoutPage() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl p-8 shadow-md sticky top-24">
+              <div className="bg-white rounded-2xl p-8 shadow-md lg:sticky lg:top-24">
                 <h2 className="text-2xl font-medium text-stone-900 mb-6">Order Summary</h2>
 
                 <div className="space-y-4 mb-6">
@@ -913,24 +1011,35 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Payment Error Display */}
+                {/* Payment Error Display - Mobile Optimized */}
                 {paymentError && (
-                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg shadow-lg animate-shake">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 w-5 h-5 text-red-600 mt-0.5">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-semibold text-red-900 mb-1">Payment Failed</h4>
-                        <p className="text-sm text-red-800">{paymentError}</p>
-                        <button
-                          onClick={() => setPaymentError(null)}
-                          className="mt-2 text-sm font-medium text-red-700 hover:text-red-800 underline"
-                        >
-                          Dismiss
-                        </button>
+                        <p className="text-sm text-red-800 break-words">{paymentError}</p>
+                        <div className="flex flex-wrap gap-3 mt-3">
+                          <button
+                            onClick={() => {
+                              setPaymentError(null);
+                              // User can try again by clicking Place Order
+                            }}
+                            className="text-sm font-medium text-red-700 hover:text-red-800 underline"
+                          >
+                            Try Again
+                          </button>
+                          <Link
+                            href="/cart"
+                            className="text-sm font-medium text-red-700 hover:text-red-800 underline"
+                          >
+                            Back to Cart
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
