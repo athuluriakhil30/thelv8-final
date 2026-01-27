@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: { unoptimized: true },
-  experimental: {
-    serverComponentsExternalPackages: ['razorpay'],
-  },
+  serverExternalPackages: ['razorpay'],
 };
 
 module.exports = nextConfig;

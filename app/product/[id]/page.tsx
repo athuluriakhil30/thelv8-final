@@ -368,11 +368,11 @@ export default function ProductPage() {
                             <span>{size}</span>
                             {isOutOfStock ? (
                               <span className="text-xs text-stone-400">Out of stock</span>
-                            ) : (
+                            ) : sizeStock < 5 ? (
                               <span className={`text-xs ${selectedSize === size ? 'text-white/80' : 'text-stone-500'}`}>
                                 {sizeStock} left
                               </span>
-                            )}
+                            ) : null}
                           </span>
                         </button>
                       );
@@ -405,7 +405,7 @@ export default function ProductPage() {
                   </button>
                   {(() => {
                     const maxStock = getAvailableStockForSelection();
-                    return maxStock > 0 && selectedColor && selectedSize && (
+                    return maxStock > 0 && maxStock < 5 && selectedColor && selectedSize && (
                       <span className="text-sm text-stone-600 ml-2">
                         {maxStock} available
                       </span>
@@ -444,7 +444,11 @@ export default function ProductPage() {
                 <p><strong>SKU:</strong> {product.sku || 'N/A'}</p>
                 {selectedColor && selectedSize ? (
                   getAvailableStockForSelection() > 0 ? (
-                    <p><strong>Availability:</strong> In Stock ({getAvailableStockForSelection()} units)</p>
+                    getAvailableStockForSelection() < 5 ? (
+                      <p><strong>Availability:</strong> In Stock ({getAvailableStockForSelection()} units)</p>
+                    ) : (
+                      <p><strong>Availability:</strong> In Stock</p>
+                    )
                   ) : (
                     <p className="text-red-600"><strong>Availability:</strong> Out of Stock</p>
                   )

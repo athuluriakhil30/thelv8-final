@@ -38,20 +38,12 @@ export default function Navigation() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="relative inline-flex items-center gap-2 group">
-              <span className="text-2xl font-semibold tracking-tight text-stone-900 logo-fill-animation group-hover:animate-micro-bounce">
-                thelv8
-              </span>
-              <div className="relative">
-                <div className="w-2 h-2 rounded-full bg-amber-600 cart-dot-slide"></div>
-                <svg 
-                  className="absolute top-0 left-0 w-2 h-2 text-green-600 opacity-0 group-hover:animate-tick-pulse" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
+            <Link href="/" className="relative inline-flex items-center group">
+              <img 
+                src="/logo.svg" 
+                alt="thelv8" 
+                className="h-8 w-auto"
+              />
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
