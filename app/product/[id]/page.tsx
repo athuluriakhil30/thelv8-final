@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Heart, Share2, Truck, RefreshCw, Shield, Star, Loader2, ShoppingCart } from 'lucide-react';
+import { Heart, Share2, Truck, RefreshCw, Shield, Star, Loader2, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { productService } from '@/services/product.service';
@@ -29,10 +29,40 @@ export default function ProductPage() {
   const [showSizeChart, setShowSizeChart] = useState(false);
   const hasLoadedRef = useRef<string | null>(null);
   const [settings, setSettings] = useState({ free_shipping_threshold: 500 });
+  
+  // Touch handling for swipe
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
   const { addItem, items } = useCart();
   const { items: wishlistItems, toggleWishlist } = useWishlist();
   const { user } = useAuth();
+
+  // Handle swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!product?.images || product.images.length <= 1) return;
+    
+    const swipeThreshold = 50; // Minimum distance for a swipe
+    const diff = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        // Swiped left - next image
+        setSelectedImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+      } else {
+        // Swiped right - previous image
+        setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+      }
+    }
+  };
 
   // Helper to get available stock for current color+size selection
   function getAvailableStockForSelection(): number {
@@ -215,7 +245,12 @@ export default function ProductPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-24">
           <div>
-            <div className="relative overflow-hidden rounded-2xl aspect-[3/4] bg-stone-100 mb-4 shadow-lg">
+            <div 
+              className="relative overflow-hidden rounded-2xl aspect-[3/4] bg-stone-100 mb-4 shadow-lg group"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <img
                 src={images[selectedImage]}
                 alt={product.name}
@@ -225,6 +260,31 @@ export default function ProductPage() {
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                   <span className="text-white font-bold text-2xl">Out of Stock</span>
                 </div>
+              )}
+              
+              {/* Navigation Arrows */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-stone-900" />
+                  </button>
+                  <button
+                    onClick={() => setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6 text-stone-900" />
+                  </button>
+                  
+                  {/* Image counter */}
+                  <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/60 text-white text-sm rounded-full">
+                    {selectedImage + 1} / {images.length}
+                  </div>
+                </>
               )}
             </div>
 
