@@ -17,6 +17,16 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     headers: {
       'x-client-info': 'thelv8-web',
     },
+    fetch: (url, options = {}) => {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
+      return fetch(url, {
+        ...options,
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
+    },
   },
   realtime: {
     params: {
@@ -40,4 +50,51 @@ export const getCurrentUser = async () => {
 // Session listener for monitoring auth state changes
 export const onAuthStateChange = (callback: (event: string, session: any) => void) => {
   return supabase.auth.onAuthStateChange(callback);
+};
+
+// Validate if current session is valid and not expired
+export const isSessionValid = async (): Promise<boolean> => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
+      return false;
+    }
+    
+    // Check if session is expired
+    const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+    const now = Date.now();
+    
+    if (expiresAt > 0 && now >= expiresAt) {
+      console.log('[Supabase] Session expired');
+      await supabase.auth.signOut();
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('[Supabase] Error validating session:', error);
+    return false;
+  }
+};
+
+// Helper to safely execute authenticated queries
+export const withAuth = async <T>(
+  queryFn: () => Promise<T>,
+  fallback?: T
+): Promise<T> => {
+  try {
+    const isValid = await isSessionValid();
+    if (!isValid && fallback !== undefined) {
+      return fallback;
+    }
+    return await queryFn();
+  } catch (error: any) {
+    // Handle JWT errors
+    if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
+      console.log('[Supabase] JWT error, clearing session...');
+      await supabase.auth.signOut();
+    }
+    throw error;
+  }
 };

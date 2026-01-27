@@ -48,9 +48,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // First check if session exists and is valid
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (!mounted) return;
+        
+        // If there's a session error or session is expired, clear it
+        if (sessionError) {
+          console.error('[AuthContext] Session error:', sessionError);
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
+
+        // Check if session is expired
+        if (session) {
+          const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+          const now = Date.now();
+          
+          if (expiresAt > 0 && now >= expiresAt) {
+            console.log('[AuthContext] Session expired, clearing...');
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setIsAdmin(false);
+            setLoading(false);
+            return;
+          }
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -61,8 +91,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!mounted) return;
             setProfile(userProfile);
             setIsAdmin(userProfile.role === 'admin');
-          } catch (profileError) {
+          } catch (profileError: any) {
             console.error('[AuthContext] Error loading profile:', profileError);
+            
+            // If unauthorized error, clear session
+            if (profileError?.code === 'PGRST301' || profileError?.message?.includes('JWT')) {
+              console.log('[AuthContext] Invalid JWT, clearing session...');
+              await supabase.auth.signOut();
+              setSession(null);
+              setUser(null);
+            }
+            
             if (!mounted) return;
             setProfile(null);
             setIsAdmin(false);
@@ -72,7 +111,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsAdmin(false);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('[AuthContext] Error initializing auth:', error);
+        // Clear auth state on any error
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -87,9 +132,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         // Ignore auth state changes when tab is not visible or during visibility transition
         if (!mounted || !isVisible.current || !shouldUpdateAuth.current) return;
+        
+        console.log('[AuthContext] Auth event:', event);
+        
+        // Handle token expiration
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('[AuthContext] Token refreshed successfully');
+        } else if (event === 'SIGNED_OUT') {
+          console.log('[AuthContext] User signed out');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setIsAdmin(false);
+          return;
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -105,7 +164,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
               return;
             }
-            console.error('Error fetching user profile:', error?.message || error);
+            
+            // If JWT error, sign out
+            if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
+              console.log('[AuthContext] JWT error during profile fetch, signing out...');
+              await supabase.auth.signOut();
+              return;
+            }
+            
+            console.error('[AuthContext] Error fetching user profile:', error?.message || error);
             if (!mounted) return;
             setProfile(null);
             setIsAdmin(false);

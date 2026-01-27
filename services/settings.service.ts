@@ -1,6 +1,16 @@
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
 
+// Helper to add a timeout to promises
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+    ),
+  ]);
+}
+
 export interface SiteSettings {
   gst_percentage: number;
   shipping_charge: number;
@@ -10,21 +20,35 @@ export interface SiteSettings {
 export const settingsService = {
   // Get all settings
   async getSettings(): Promise<SiteSettings> {
-    const { data, error } = await supabase
-      .from('settings' as any)
-      .select('*')
-      .single();
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from('settings' as any)
+          .select('*')
+          .single(),
+        10000
+      );
 
-    if (error) {
-      // Return defaults if no settings exist
+      if (error) {
+        console.warn('[SettingsService] Error fetching settings, using defaults:', error);
+        // Return defaults if no settings exist
+        return {
+          gst_percentage: 5,
+          shipping_charge: 100,
+          free_shipping_threshold: 500,
+        };
+      }
+
+      return data as unknown as SiteSettings;
+    } catch (error) {
+      console.error('[SettingsService] Failed to fetch settings:', error);
+      // Return defaults on timeout or error
       return {
         gst_percentage: 5,
         shipping_charge: 100,
         free_shipping_threshold: 500,
       };
     }
-
-    return data as unknown as SiteSettings;
   },
 
   // Update settings

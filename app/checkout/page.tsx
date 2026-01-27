@@ -82,6 +82,9 @@ export default function CheckoutPage() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [showPaymentLoader, setShowPaymentLoader] = useState(false);
   const hasCheckedAuth = useRef(false);
+  const paymentInProgress = useRef(false);
+  const currentOrderId = useRef<string | null>(null);
+  const wasVisible = useRef(true);
   const [settings, setSettings] = useState<SiteSettings>({
     gst_percentage: 5,
     shipping_charge: 100,
@@ -105,6 +108,82 @@ export default function CheckoutPage() {
     address_type: 'home' as 'home' | 'work' | 'other',
   });
 
+  // Handle visibility changes during payment
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = !document.hidden;
+      
+      if (paymentInProgress.current) {
+        if (!isVisible) {
+          console.log('[Checkout] App hidden during payment - preserving state');
+          wasVisible.current = false;
+          
+          // Save payment state to localStorage as backup
+          if (currentOrderId.current) {
+            localStorage.setItem('thelv8-pending-payment', JSON.stringify({
+              orderId: currentOrderId.current,
+              timestamp: Date.now(),
+            }));
+          }
+        } else if (!wasVisible.current) {
+          console.log('[Checkout] App visible again - payment still in progress');
+          wasVisible.current = true;
+          
+          // Check if order was updated while away (webhook might have processed)
+          if (currentOrderId.current) {
+            checkOrderStatus(currentOrderId.current);
+          }
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // Check for pending payment on mount
+  useEffect(() => {
+    const checkPendingPayment = async () => {
+      const pendingPayment = localStorage.getItem('thelv8-pending-payment');
+      if (pendingPayment && user) {
+        try {
+          const { orderId, timestamp } = JSON.parse(pendingPayment);
+          
+          // Only check if less than 5 minutes old
+          if (Date.now() - timestamp < 5 * 60 * 1000) {
+            console.log('[Checkout] Found pending payment, checking status...');
+            
+            const order = await orderService.getOrderById(orderId);
+            if (order && order.payment_status === 'paid') {
+              console.log('[Checkout] Pending payment was successful!');
+              localStorage.removeItem('thelv8-pending-payment');
+              await clearCart();
+              router.push(`/order-success/${orderId}`);
+              toast.success('Payment successful! Order placed.');
+            } else if (order && order.payment_status === 'pending') {
+              // Payment still pending, show option to verify
+              console.log('[Checkout] Payment still pending, order:', orderId);
+              toast.info('You have a pending payment. Checking status...', { duration: 3000 });
+            } else {
+              // Order was cancelled or doesn't exist
+              localStorage.removeItem('thelv8-pending-payment');
+            }
+          } else {
+            // Too old, clear it
+            localStorage.removeItem('thelv8-pending-payment');
+          }
+        } catch (error) {
+          console.error('[Checkout] Error checking pending payment:', error);
+          localStorage.removeItem('thelv8-pending-payment');
+        }
+      }
+    };
+    
+    if (user && !authLoading) {
+      checkPendingPayment();
+    }
+  }, [user, authLoading]);
+
   useEffect(() => {
     if (hasCheckedAuth.current) return;
 
@@ -126,6 +205,23 @@ export default function CheckoutPage() {
       loadCheckoutData();
     }
   }, [user, authLoading, items.length]);
+
+  async function checkOrderStatus(orderId: string) {
+    try {
+      const updatedOrder = await orderService.getOrderById(orderId);
+      
+      if (updatedOrder && updatedOrder.payment_status === 'paid') {
+        console.log('[Checkout] Order was paid while user was away!');
+        paymentInProgress.current = false;
+        currentOrderId.current = null;
+        await clearCart();
+        router.push(`/order-success/${orderId}`);
+        toast.success('Payment successful! Order placed.');
+      }
+    } catch (error) {
+      console.error('[Checkout] Error checking order status:', error);
+    }
+  }
 
   async function loadCheckoutData() {
     try {
@@ -546,6 +642,10 @@ export default function CheckoutPage() {
           ondismiss: async function() {
             console.log('[Checkout] User dismissed payment modal');
             
+            // Clear payment tracking
+            paymentInProgress.current = false;
+            currentOrderId.current = null;
+            
             // ✅ CRITICAL: Cancel order and restore stock when user closes modal
             try {
               await orderService.cancelOrder(order.id, 'Payment cancelled by user');
@@ -572,6 +672,10 @@ export default function CheckoutPage() {
         
         handler: async function (response: any) {
           setShowPaymentLoader(false);
+          paymentInProgress.current = false;
+          currentOrderId.current = null;
+          localStorage.removeItem('thelv8-pending-payment');
+          
           try {
             // Payment successful
             await orderService.updatePaymentStatus(
@@ -655,6 +759,9 @@ export default function CheckoutPage() {
 
       razorpay.on('payment.failed', async function (response: any) {
         setShowPaymentLoader(false);
+        paymentInProgress.current = false;
+        currentOrderId.current = null;
+        
         console.error('Payment failed:', response.error);
 
         // Extract error details
@@ -694,6 +801,8 @@ export default function CheckoutPage() {
       let errorTimeout: NodeJS.Timeout | undefined;
       
       try {
+        paymentInProgress.current = true;
+        currentOrderId.current = order.id;
         razorpay.open();
         razorpayOpened = true;
         

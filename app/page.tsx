@@ -54,6 +54,8 @@ export default function Home() {
 
   async function loadHomeData() {
     try {
+      setLoading(true);
+      
       const [productsData, arrivals, collections, siteSettings] = await Promise.all([
         productService.getProducts({ featured: true, limit: 6 }),
         productService.getNewArrivals(4),
@@ -70,7 +72,13 @@ export default function Home() {
       if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
         return;
       }
+      
       console.error('Error loading home data:', error?.message || error);
+      
+      // Don't show error to user for public pages - just show empty state
+      setFeaturedProducts([]);
+      setNewArrivals([]);
+      setFeaturedCollections([]);
     } finally {
       setLoading(false);
     }

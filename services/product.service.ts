@@ -5,6 +5,16 @@ import { Insertable, Updateable, handleSupabaseResponse } from '@/lib/supabase/t
 type ProductInsert = Insertable<'products'>;
 type ProductUpdate = Updateable<'products'>;
 
+// Helper to add a timeout to promises
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+    ),
+  ]);
+}
+
 // Helper to add image_url field for backward compatibility
 function addImageUrl(product: any): Product {
   return {
@@ -48,9 +58,13 @@ export const productService = {
 
     query = query.range(offset, offset + limit - 1);
 
-    const { data, error, count } = await query;
+    const { data, error, count } = await withTimeout(query, 10000);
 
-    if (error) throw error;
+    if (error) {
+      console.error('[ProductService] Error fetching products:', error);
+      throw error;
+    }
+    
     return {
       products: (data || []).map(addImageUrl) as Product[],
       total: count || 0

@@ -2,6 +2,16 @@ import { supabase } from '@/lib/supabase/client';
 import { Collection, Product } from '@/types';
 import { Insertable, Updateable, handleSupabaseResponse } from '@/lib/supabase/types';
 
+// Helper to add a timeout to promises
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+    ),
+  ]);
+}
+
 // Helper to add image_url field for backward compatibility
 function addImageUrl(product: any): Product {
   return {
@@ -25,14 +35,20 @@ export const collectionService = {
 
   // Get featured collections
   async getFeaturedCollections(): Promise<Collection[]> {
-    const { data, error } = await supabase
-      .from('collections' as any)
-      .select('*')
-      .eq('published', true)
-      .eq('featured', true)
-      .order('name');
+    const { data, error } = await withTimeout(
+      supabase
+        .from('collections' as any)
+        .select('*')
+        .eq('published', true)
+        .eq('featured', true)
+        .order('name'),
+      10000
+    );
 
-    if (error) throw error;
+    if (error) {
+      console.error('[CollectionService] Error fetching featured collections:', error);
+      throw error;
+    }
     return data as unknown as Collection[];
   },
 
