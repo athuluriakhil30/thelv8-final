@@ -39,7 +39,9 @@ export const productService = {
       query = query.eq('featured', true);
     }
 
-    query = query.order('created_at', { ascending: false });
+    // Order by shop_display_order first (if set), then by created_at
+    query = query.order('shop_display_order', { ascending: true })
+                 .order('created_at', { ascending: false });
 
     const limit = filters?.limit || 12;
     const offset = filters?.offset || 0;
@@ -107,6 +109,7 @@ export const productService = {
       .select('*, category:categories(*)')
       .eq('published', true)
       .eq('new_arrival', true)
+      .order('new_arrival_display_order', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (limit) {
@@ -385,5 +388,77 @@ export const productService = {
       console.error('[ProductService] validateCartStock failed:', error);
       throw error;
     }
+  },
+
+  /**
+   * Update shop display order for a product
+   */
+  async updateShopDisplayOrder(productId: string, displayOrder: number) {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ shop_display_order: displayOrder })
+      .eq('id', productId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return addImageUrl(data) as Product;
+  },
+
+  /**
+   * Update new arrival display order for a product
+   */
+  async updateNewArrivalDisplayOrder(productId: string, displayOrder: number) {
+    const { data, error } = await supabase
+      .from('products')
+      .update({ new_arrival_display_order: displayOrder })
+      .eq('id', productId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return addImageUrl(data) as Product;
+  },
+
+  /**
+   * Bulk update shop display orders
+   */
+  async bulkUpdateShopDisplayOrders(updates: { id: string; order: number }[]) {
+    const promises = updates.map(({ id, order }) =>
+      supabase
+        .from('products')
+        .update({ shop_display_order: order })
+        .eq('id', id)
+    );
+
+    const results = await Promise.all(promises);
+    const errors = results.filter(r => r.error);
+    
+    if (errors.length > 0) {
+      throw new Error(`Failed to update ${errors.length} product orders`);
+    }
+    
+    return true;
+  },
+
+  /**
+   * Bulk update new arrival display orders
+   */
+  async bulkUpdateNewArrivalDisplayOrders(updates: { id: string; order: number }[]) {
+    const promises = updates.map(({ id, order }) =>
+      supabase
+        .from('products')
+        .update({ new_arrival_display_order: order })
+        .eq('id', id)
+    );
+
+    const results = await Promise.all(promises);
+    const errors = results.filter(r => r.error);
+    
+    if (errors.length > 0) {
+      throw new Error(`Failed to update ${errors.length} product orders`);
+    }
+    
+    return true;
   },
 };

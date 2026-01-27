@@ -26,6 +26,10 @@ export default function Home() {
   const { user } = useAuth();
   const { items: wishlistItems, toggleWishlist } = useWishlist();
   const [animationData, setAnimationData] = useState(null);
+  
+  // Newsletter subscription state
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
     if (!hasLoaded.current) {
@@ -82,6 +86,15 @@ export default function Home() {
 
   function isInWishlist(productId: string): boolean {
     return wishlistItems?.some((item) => item.product_id === productId) || false;
+  }
+
+  function handleNewsletterSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    if (newsletterEmail && newsletterEmail.includes('@')) {
+      setIsSubscribed(true);
+    } else {
+      toast.error('Please enter a valid email address');
+    }
   }
 
   return (
@@ -141,99 +154,6 @@ export default function Home() {
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 border-2 border-stone-400 rounded-full flex items-start justify-center p-2">
             <div className="w-1.5 h-3 bg-stone-400 rounded-full animate-scroll"></div>
-          </div>
-        </div>
-      </section>
-
-      {/* Shop by Category - Visual Grid */}
-      <section className="py-20 md:py-28 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-stone-900 mb-5 tracking-tight">Shop by Category</h2>
-            <p className="text-stone-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">Find your perfect style</p>
-          </div>
-
-          {/* Custom Category Grid - Men & Women tall, Acc & New Season wide horizontal */}
-          <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-4 md:gap-6">
-            {/* First Card - Men (Tall, spans 2 rows) */}
-            <Link
-              href="/shop?category=men"
-              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-auto md:row-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
-            >
-              <img
-                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/men.jpg"
-                alt="Men's Collection"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
-                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">Men</h3>
-                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                  <span className="text-sm md:text-base font-medium">Shop Now</span>
-                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
-                </div>
-              </div>
-            </Link>
-
-            {/* Second Card - Women (Tall, spans 2 rows) */}
-            <Link
-              href="/shop?category=women"
-              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-auto md:row-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
-            >
-              <img
-                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/women.jpg"
-                alt="Women's Collection"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
-                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">Women</h3>
-                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                  <span className="text-sm md:text-base font-medium">Shop Now</span>
-                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
-                </div>
-              </div>
-            </Link>
-
-            {/* Third Card - Accessories (Wide horizontal, spans 2 columns, 1 row - top right) */}
-            <Link
-              href="/shop?category=accessories"
-              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-[2/1] md:col-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
-            >
-              <img
-                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/accessories.png"
-                alt="Accessories Collection"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
-                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">Accessories</h3>
-                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                  <span className="text-sm md:text-base font-medium">Shop Now</span>
-                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
-                </div>
-              </div>
-            </Link>
-
-            {/* Fourth Card - New Season (Wide horizontal, spans 2 columns, 1 row - bottom right) */}
-            <Link
-              href="/new-arrivals"
-              className="group relative overflow-hidden rounded-2xl md:rounded-3xl aspect-[3/4] md:aspect-[2/1] md:col-span-2 shadow-lg hover:shadow-2xl transition-all duration-500"
-            >
-              <img
-                src="https://feitifnjvtipgkinmuhp.supabase.co/storage/v1/object/public/products/announcements/new-season.png"
-                alt="New Season Collection"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10 group-hover:from-black/80 transition-colors duration-500"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
-                <h3 className="text-2xl md:text-3xl font-semibold text-white mb-2">New Season</h3>
-                <div className="flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                  <span className="text-sm md:text-base font-medium">Shop Now</span>
-                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-2 transition-transform" />
-                </div>
-              </div>
-            </Link>
           </div>
         </div>
       </section>
@@ -346,22 +266,22 @@ export default function Home() {
 
       {/* New Arrivals Section - Enhanced with modern grid and better visual hierarchy */}
       {newArrivals.length > 0 && (
-        <section className="py-20 md:py-28 bg-gradient-to-b from-stone-50 via-amber-50/20 to-white relative overflow-hidden">
+        <section className="py-12 md:py-16 bg-gradient-to-b from-stone-50 via-amber-50/20 to-white relative overflow-hidden">
           {/* Decorative elements */}
           <div className="absolute top-0 left-1/4 w-80 h-80 bg-amber-200/30 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-stone-200/40 rounded-full blur-3xl"></div>
           
           <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
-            <div className="text-center mb-16 md:mb-20">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 px-5 py-2.5 rounded-full text-sm font-semibold mb-6 shadow-sm border border-amber-200/50">
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-100 to-amber-50 text-amber-700 px-5 py-2.5 rounded-full text-sm font-semibold mb-4 shadow-sm border border-amber-200/50">
                 <Sparkles className="w-4 h-4" />
-                Just Arrived
+                Season 01
               </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-stone-900 mb-5 tracking-tight">Fresh Picks</h2>
-              <p className="text-stone-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">Discover the latest additions to our collection</p>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-light text-stone-900 mb-3 tracking-tight">Fresh Picks</h2>
+              <p className="text-stone-600 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">Discover the latest additions to our collection</p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
               {newArrivals.map((product) => (
                 <div key={product.id} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-stone-100 hover:border-amber-200">
                   <Link href={`/product/${product.id}`} className="block relative aspect-square overflow-hidden bg-gradient-to-br from-stone-100 to-amber-50">
@@ -402,9 +322,9 @@ export default function Home() {
                     </button>
                   </Link>
 
-                  <div className="p-5">
+                  <div className="p-4">
                     <Link href={`/product/${product.id}`}>
-                      <h3 className="text-base font-semibold text-stone-900 mb-2 group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug">
+                      <h3 className="text-sm md:text-base font-semibold text-stone-900 mb-2 group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug">
                         {product.name}
                       </h3>
                     </Link>
@@ -412,9 +332,9 @@ export default function Home() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {product.compare_at_price && product.compare_at_price > product.price && (
-                          <span className="text-sm font-light text-stone-400 line-through">{formatPrice(product.compare_at_price)}</span>
+                          <span className="text-xs md:text-sm font-light text-stone-400 line-through">{formatPrice(product.compare_at_price)}</span>
                         )}
-                        <span className="text-xl font-semibold text-stone-900">{formatPrice(product.price)}</span>
+                        <span className="text-lg md:text-xl font-semibold text-stone-900">{formatPrice(product.price)}</span>
                       </div>
                     </div>
                   </div>
@@ -422,7 +342,7 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="text-center mt-16">
+            <div className="text-center mt-10 md:mt-12">
               <Link
                 href="/new-arrivals"
                 className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 font-semibold text-base"
@@ -518,8 +438,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {[
               { icon: Truck, title: 'Free Shipping', desc: `On orders over ${formatPrice(settings.free_shipping_threshold)}`, gradient: 'from-blue-50 to-blue-100/50' },
-              { icon: Shield, title: 'Secure Payment', desc: '100% protected checkout', gradient: 'from-emerald-50 to-emerald-100/50' },
-              { icon: Sparkles, title: 'Premium Quality', desc: 'Handpicked materials', gradient: 'from-amber-50 to-amber-100/50' }
+              { icon: Shield, title: 'Secure Checkout', desc: 'Razorpay protected payments', gradient: 'from-emerald-50 to-emerald-100/50' },
+              { icon: Sparkles, title: 'Premium Quality', desc: 'Crafted with care', gradient: 'from-amber-50 to-amber-100/50' }
             ].map((feature, idx) => (
               <div
                 key={idx}
@@ -550,24 +470,43 @@ export default function Home() {
             Exclusive Access
           </div>
           
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light mb-5 md:mb-7 tracking-tight">Join the lv8 Community</h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light mb-5 md:mb-7 tracking-tight">Join thelv8 circle</h2>
           <p className="text-stone-300 text-lg md:text-xl mb-10 md:mb-14 max-w-2xl mx-auto leading-relaxed">
-            Subscribe to receive exclusive offers, style tips, and early access to new collections
+            Get early access to future drops & offers.
           </p>
 
-          <div className="max-w-lg mx-auto flex flex-col sm:flex-row gap-4">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="flex-1 px-6 md:px-8 py-4 md:py-5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-stone-400 focus:outline-none focus:border-amber-500 focus:bg-white/15 transition-all text-base shadow-lg"
-            />
-            <button className="px-8 md:px-10 py-4 md:py-5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-semibold text-base w-full sm:w-auto shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105">
-              Subscribe
-            </button>
-          </div>
+          {!isSubscribed ? (
+            <form onSubmit={handleNewsletterSubscribe} className="max-w-lg mx-auto flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder="Enter your email address"
+                required
+                className="flex-1 px-6 md:px-8 py-4 md:py-5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-stone-400 focus:outline-none focus:border-amber-500 focus:bg-white/15 transition-all text-base shadow-lg"
+              />
+              <button 
+                type="submit"
+                className="px-8 md:px-10 py-4 md:py-5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-semibold text-base w-full sm:w-auto shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105"
+              >
+                Subscribe
+              </button>
+            </form>
+          ) : (
+            <div className="max-w-lg mx-auto">
+              <div className="bg-green-500/20 border border-green-500/30 backdrop-blur-sm rounded-full px-8 py-6 flex items-center justify-center gap-3">
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-lg font-medium text-green-100">
+                  You have been subscribed to our newsletter.
+                </span>
+              </div>
+            </div>
+          )}
           
           <p className="text-stone-400 text-sm mt-6">
-            Join 10,000+ subscribers. Unsubscribe anytime.
+            Join 100+ subscribers. Unsubscribe anytime.
           </p>
         </div>
       </section>

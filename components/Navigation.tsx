@@ -50,9 +50,9 @@ export default function Navigation() {
               <Link href="/shop" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
                 Shop
               </Link>
-              <Link href="/collections" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
+              {/* <Link href="/collections" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
                 Collections
-              </Link>
+              </Link> */}
               <Link href="/new-arrivals" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
                 New Arrivals
               </Link>

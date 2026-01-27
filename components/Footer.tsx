@@ -27,9 +27,17 @@ export default function Footer() {
             <h4 className="font-medium mb-4">Support</h4>
             <ul className="space-y-3">
               <li><Link href="/contact-us" className="text-stone-400 hover:text-white transition-colors">Contact Us</Link></li>
+              <li><Link href="/faq" className="text-stone-400 hover:text-white transition-colors">FAQ</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-4">Policies</h4>
+            <ul className="space-y-3">
               <li><Link href="/shipping-policy" className="text-stone-400 hover:text-white transition-colors">Shipping Policy</Link></li>
               <li><Link href="/cancelation-policy" className="text-stone-400 hover:text-white transition-colors">Cancelation Policy</Link></li>
-              <li><Link href="/faq" className="text-stone-400 hover:text-white transition-colors">FAQ</Link></li>
+              <li><Link href="/privacy-policy" className="text-stone-400 hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms-conditions" className="text-stone-400 hover:text-white transition-colors">Terms & Conditions</Link></li>
             </ul>
           </div>
 
@@ -60,9 +68,27 @@ export default function Footer() {
               </a>
             </p>
           </div>
-          <div className="flex gap-6 text-sm">
-            <Link href="/privacy-policy" className="text-stone-400 hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/terms-conditions" className="text-stone-400 hover:text-white transition-colors">Terms & Conditions</Link>
+          
+          {/* Payment Methods */}
+          <div className="flex items-center gap-3 flex-wrap justify-center md:justify-end">
+            <div className="w-12 h-8 flex items-center justify-center">
+              <img src="/payment-icons/visa.svg" alt="Visa" className="max-w-full max-h-full object-contain" />
+            </div>
+            <div className="w-12 h-8 flex items-center justify-center">
+              <img src="/payment-icons/mastercard.svg" alt="Mastercard" className="max-w-full max-h-full object-contain" />
+            </div>
+            <div className="w-12 h-8 flex items-center justify-center">
+              <img src="/payment-icons/rupay.svg" alt="RuPay" className="max-w-full max-h-full object-contain" />
+            </div>
+            <div className="w-12 h-8 flex items-center justify-center">
+              <img src="/payment-icons/upi.svg" alt="UPI" className="max-w-full max-h-full object-contain" />
+            </div>
+            <div className="w-12 h-8 flex items-center justify-center">
+              <img src="/payment-icons/gpay.svg" alt="Google Pay" className="max-w-full max-h-full object-contain" />
+            </div>
+            <div className="w-12 h-8 flex items-center justify-center">
+              <img src="/payment-icons/razorpay.svg" alt="Razorpay" className="max-w-full max-h-full object-contain" />
+            </div>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingBag, Users, Settings, ArrowLeft, Loader2, Menu, X, Tag, Megaphone, Snowflake } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Settings, ArrowLeft, Loader2, Menu, X, Tag, Megaphone, Snowflake, ArrowUpDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -48,6 +48,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const menuItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/products', label: 'Products', icon: Package },
+    { href: '/admin/product-order', label: 'Product Display Order', icon: ArrowUpDown },
     { href: '/admin/collections', label: 'Collections', icon: Package },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
     { href: '/admin/customers', label: 'Customers', icon: Users },

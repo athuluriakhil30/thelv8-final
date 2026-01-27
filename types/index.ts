@@ -23,6 +23,8 @@ export interface Product {
   published: boolean;
   new_arrival?: boolean; // New field for marking new arrivals
   collection_ids?: string[]; // Array of collection IDs this product belongs to
+  shop_display_order?: number; // Display order in shop page (lower numbers appear first)
+  new_arrival_display_order?: number; // Display order in new arrivals page (lower numbers appear first)
   created_at: string;
   updated_at: string;
 }
