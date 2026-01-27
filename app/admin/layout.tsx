@@ -3,7 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingBag, Users, Settings, ArrowLeft, Loader2, Menu, X, Tag, Megaphone, Snowflake, ArrowUpDown } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Settings, ArrowLeft, Loader2, Menu, X, Tag, Megaphone, Snowflake, ArrowUpDown, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -51,6 +51,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { href: '/admin/product-order', label: 'Product Display Order', icon: ArrowUpDown },
     { href: '/admin/collections', label: 'Collections', icon: Package },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+    { href: '/admin/verify-payment', label: 'Verify Payment', icon: CheckCircle },
     { href: '/admin/customers', label: 'Customers', icon: Users },
     { href: '/admin/coupons', label: 'Coupons', icon: Tag },
     { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -54,16 +55,15 @@ export default function PaymentVerificationPage() {
     setResult(null);
 
     try {
-      // Get auth token from Supabase
-      const token = localStorage.getItem('supabase.auth.token');
-      if (!token) {
+      // Get auth token from Supabase session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
         throw new Error('Not authenticated. Please login first.');
       }
 
-      // Parse token to get access_token
-      const authData = JSON.parse(token);
-      const accessToken = authData.access_token;
-
+      const accessToken = session.access_token;
+      
       if (!accessToken) {
         throw new Error('Invalid auth token. Please login again.');
       }
