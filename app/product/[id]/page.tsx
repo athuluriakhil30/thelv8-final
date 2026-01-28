@@ -371,17 +371,11 @@ export default function ProductPage() {
                             borderColor: selectedColor === normalizedColor.name ? '#1c1917' : normalizedColor.hex,
                           }}
                         >
-                          <span className="flex items-center gap-2">
-                            <span
-                              className="w-4 h-4 rounded-full border border-stone-300"
-                              style={{ backgroundColor: normalizedColor.hex }}
-                            />
-                            <span className="flex flex-col items-start">
-                              <span>{normalizedColor.name}</span>
-                              {!hasStock && (
-                                <span className="text-xs text-stone-400">Out of stock</span>
-                              )}
-                            </span>
+                          <span className="flex flex-col items-start">
+                            <span>{normalizedColor.name}</span>
+                            {!hasStock && (
+                              <span className="text-xs text-stone-400">Out of stock</span>
+                            )}
                           </span>
                         </button>
                       );

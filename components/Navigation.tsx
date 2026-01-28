@@ -172,9 +172,9 @@ export default function Navigation() {
                 <Link href="/shop" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
                   Shop
                 </Link>
-                <Link href="/collections" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
+                {/* <Link href="/collections" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
                   Collections
-                </Link>
+                </Link> */}
                 <Link href="/new-arrivals" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
                   New Arrivals
                 </Link>
