@@ -7,6 +7,7 @@ import { AppProviders } from '@/context/AppProviders';
 import { Toaster } from '@/components/ui/toaster';
 import { AnnouncementPopup } from '@/components/AnnouncementPopup';
 import { SeasonalAnimation } from '@/components/SeasonalAnimation';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -40,6 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
       <body className={spaceGrotesk.className}>
+        <GoogleAnalytics />
         <AppProviders>
           <SeasonalAnimation />
           <Navigation />
