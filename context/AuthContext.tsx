@@ -171,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!mounted) return;
             setProfile(userProfile);
             setIsAdmin(userProfile.role === 'admin');
+            console.log('[AuthContext] Profile loaded successfully');
           } catch (error: any) {
             // Ignore AbortErrors (happens when component unmounts)
             if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
@@ -188,10 +189,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!mounted) return;
             setProfile(null);
             setIsAdmin(false);
+          } finally {
+            // Ensure loading is set to false after profile fetch completes
+            if (mounted) {
+              setLoading(false);
+            }
           }
         } else {
           setProfile(null);
           setIsAdmin(false);
+          // Ensure loading is set to false even when no user
+          if (mounted) {
+            setLoading(false);
+          }
         }
       }
     );
