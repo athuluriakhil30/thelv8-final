@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, Search, Loader2, Tag, Percent, DollarSign } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Loader2, Tag, Percent, DollarSign, Settings2 } from 'lucide-react';
 import { couponService, Coupon } from '@/services/coupon.service';
 import { formatPrice, formatDate } from '@/lib/helpers';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function AdminCouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -474,6 +475,13 @@ export default function AdminCouponsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/admin/coupons/${coupon.id}/rules`}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Manage Advanced Rules"
+                          >
+                            <Settings2 className="w-4 h-4" />
+                          </Link>
                           <button
                             onClick={() => handleEdit(coupon)}
                             className="p-2 text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"

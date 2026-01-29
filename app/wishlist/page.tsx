@@ -80,10 +80,24 @@ export default function WishlistPage() {
       return;
     }
 
-    const color = product.colors && product.colors.length > 0 ? product.colors[0].name : 'default';
-    const size = product.sizes && product.sizes.length > 0 ? product.sizes[0] : 'default';
+    // Get the first color - handle both string array and ProductColor array
+    let firstColor = '';
+    if (product.colors && product.colors.length > 0) {
+      const color = product.colors[0];
+      // If color is an object with name property, use name; otherwise use as string
+      firstColor = typeof color === 'object' && 'name' in color ? color.name : String(color);
+    }
+
+    // Get the first size or empty string if no sizes
+    const firstSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : '';
+
+    // Validate that color and size exist (don't use 'default')
+    if (!firstColor || !firstSize) {
+      toast.error('Please select this item from the product page to choose color and size');
+      return;
+    }
     
-    addItem(product.id, color, size, 1);
+    addItem(product.id, firstColor, firstSize, 1);
     
     toast.success('Added to cart!');
   }

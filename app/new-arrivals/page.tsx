@@ -44,10 +44,27 @@ export default function NewArrivalsPage() {
       return;
     }
 
+    // Get the first color - handle both string array and ProductColor array
+    let firstColor = '';
+    if (product.colors && product.colors.length > 0) {
+      const color = product.colors[0];
+      // If color is an object with name property, use name; otherwise use as string
+      firstColor = typeof color === 'object' && 'name' in color ? color.name : String(color);
+    }
+
+    // Get the first size or empty string if no sizes
+    const firstSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : '';
+
+    // Validate that color and size exist (don't use 'default')
+    if (!firstColor || !firstSize) {
+      toast.error('Please select this item from the product page to choose color and size');
+      return;
+    }
+
     addItem(
       product.id,
-      product.colors && product.colors.length > 0 ? product.colors[0].name : 'default',
-      product.sizes && product.sizes.length > 0 ? product.sizes[0] : 'default',
+      firstColor,
+      firstSize,
       1
     );
     

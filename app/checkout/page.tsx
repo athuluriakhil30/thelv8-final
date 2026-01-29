@@ -270,12 +270,23 @@ export default function CheckoutPage() {
     try {
       setApplyingCoupon(true);
       const subtotal = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-      const result = await couponService.validateCoupon(couponCode, subtotal);
+      
+      // Pass cart items for advanced rule validation
+      const result = await couponService.validateCoupon(couponCode, subtotal, cartItems as any);
 
       if (result.valid && result.discount) {
         setAppliedCoupon(result.coupon);
         setCouponDiscount(result.discount);
-        toast.success(result.message || 'Coupon applied successfully');
+        
+        // Show detailed breakdown if advanced rules were applied
+        if (result.appliedRules && result.appliedRules.length > 0) {
+          toast.success(
+            result.breakdown?.explanation || result.message || 'Coupon applied successfully',
+            { duration: 5000 }
+          );
+        } else {
+          toast.success(result.message || 'Coupon applied successfully');
+        }
       } else {
         toast.error(result.message || 'Invalid coupon');
       }

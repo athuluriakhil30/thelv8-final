@@ -1,27 +1,19 @@
 import { supabase } from '@/lib/supabase/client';
+import { couponRulesService } from './coupon-rules.service';
+import type { CartItem, Product, Coupon } from '@/types';
 
-export interface Coupon {
-  id: string;
-  code: string;
-  description: string | null;
-  discount_type: 'percentage' | 'fixed';
-  discount_value: number;
-  min_purchase_amount: number;
-  max_discount_amount: number | null;
-  usage_limit: number | null;
-  used_count: number;
-  valid_from: string;
-  valid_until: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+// Re-export advanced types
+export type { 
+  CouponValidationResult, 
+  CouponWithRules, 
+  CouponRule,
+  AppliedCouponRule,
+  CouponBreakdown,
+  Coupon
+} from '@/types';
 
-export interface CouponValidationResult {
-  valid: boolean;
-  message: string;
-  discount?: number;
-  coupon?: Coupon;
+interface CartItemWithProduct extends CartItem {
+  product: Product;
 }
 
 export const couponService = {
@@ -52,8 +44,19 @@ export const couponService = {
   },
 
   // Validate and calculate coupon discount
-  async validateCoupon(code: string, subtotal: number): Promise<CouponValidationResult> {
+  // Enhanced to support advanced rules while maintaining backward compatibility
+  async validateCoupon(
+    code: string, 
+    subtotal: number,
+    cartItems?: CartItemWithProduct[]
+  ): Promise<import('@/types').CouponValidationResult> {
     try {
+      // If cart items provided, use advanced validation
+      if (cartItems && cartItems.length > 0) {
+        return await couponRulesService.validateAdvancedCoupon(code, cartItems, subtotal);
+      }
+
+      // Otherwise use simple validation (backward compatibility)
       const { data, error } = await supabase
         .from('coupons')
         .select('*')
@@ -119,7 +122,15 @@ export const couponService = {
         valid: true,
         message: 'Coupon applied successfully',
         discount: Math.round(discount * 100) / 100,
-        coupon: coupon as Coupon,
+        coupon: coupon as any,
+        totalSavings: Math.round(discount * 100) / 100,
+        breakdown: {
+          originalAmount: subtotal,
+          discountAmount: discount,
+          finalAmount: subtotal - discount,
+          appliedRuleCount: 0,
+          explanation: `${coupon.discount_type === 'percentage' ? coupon.discount_value + '%' : '₹' + coupon.discount_value} discount applied`,
+        },
       };
     } catch (error) {
       console.error('Error validating coupon:', error);
