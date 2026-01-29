@@ -96,6 +96,10 @@ export default function AdminCouponsPage() {
         valid_from: formData.valid_from,
         valid_until: formData.valid_until,
         is_active: formData.is_active,
+        // Advanced coupon rules fields (optional)
+        allow_stacking: false,
+        max_applications_per_order: 1,
+        priority: 0,
       };
 
       if (editingId) {
