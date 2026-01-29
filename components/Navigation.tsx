@@ -53,8 +53,14 @@ export default function Navigation() {
               {/* <Link href="/collections" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
                 Collections
               </Link> */}
-              <Link href="/new-arrivals" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
+              <Link href="/new-arrivals" style={{ color: '#78350f' }} className="hover:opacity-80 transition-opacity font-medium">
                 New Arrivals
+              </Link>
+              <Link href="/shop?category=essentials" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
+                Essentials
+              </Link>
+              <Link href="/custom-orders" className="text-stone-700 hover:text-stone-900 transition-colors font-medium">
+                Custom Orders
               </Link>
               {isAdmin && (
                 <Link href="/admin" className="text-amber-700 hover:text-amber-900 transition-colors font-medium">
@@ -169,14 +175,20 @@ export default function Navigation() {
                   <Search className="w-5 h-5" />
                   Search Products
                 </button>
-                <Link href="/shop" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
-                  Shop
+                <Link href="/new-arrivals" style={{ color: '#78350f' }} className="hover:opacity-80 transition-opacity font-medium py-2">
+                  New Arrivals
                 </Link>
                 {/* <Link href="/collections" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
                   Collections
                 </Link> */}
-                <Link href="/new-arrivals" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
-                  New Arrivals
+                <Link href="/shop?category=essentials" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
+                  Essentials
+                </Link>
+                <Link href="/custom-orders" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
+                  Custom Orders
+                </Link>
+                <Link href="/shop" className="text-stone-700 hover:text-stone-900 transition-colors font-medium py-2">
+                  Shop
                 </Link>
                 {user ? (
                   <>

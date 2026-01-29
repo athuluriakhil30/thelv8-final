@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, ArrowRight, Percent } from 'lucide-react';
@@ -19,6 +20,7 @@ export function AnnouncementPopup() {
   const [mounted, setMounted] = useState(false);
   const hasChecked = useRef(false);
   const { user } = useAuth();
+  const pathname = usePathname();
 
   // Prevent SSR/hydration issues
   useEffect(() => {
@@ -26,11 +28,12 @@ export function AnnouncementPopup() {
   }, []);
 
   useEffect(() => {
-    if (mounted && !hasChecked.current) {
+    // Only show on home page
+    if (mounted && !hasChecked.current && pathname === '/') {
       hasChecked.current = true;
       checkAndShowAnnouncement();
     }
-  }, [mounted]);
+  }, [mounted, pathname]);
 
   async function checkAndShowAnnouncement() {
     try {
