@@ -28,6 +28,14 @@ export function WebViewRedirect() {
         /Line/i.test(ua) ||
         // WeChat
         /MicroMessenger/i.test(ua) ||
+        // Google App (GSA = Google Search App) - iOS & Android
+        /GSA/i.test(ua) ||
+        // Google WebView (Android)
+        (/Android/i.test(ua) && /GoogleApp/i.test(ua)) ||
+        // Google App (iOS) - Detects as Safari but with Google identifier
+        (/iPhone|iPad|iPod/i.test(ua) && /CriOS|GSA/i.test(ua) && !/Safari\/[\d.]+$/i.test(ua)) ||
+        // iOS WebView (general)
+        (/iPhone|iPad|iPod/i.test(ua) && !/Safari\/[\d.]+$/i.test(ua) && !/CriOS|FxiOS|OPiOS/i.test(ua)) ||
         // Generic WebView detection
         /wv|WebView/i.test(ua) ||
         // Android WebView
