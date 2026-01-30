@@ -139,14 +139,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('[AuthContext] Auth event:', event);
         
         // Skip profile fetch for INITIAL_SESSION - already handled in initializeAuth
+        // But still update the session state to ensure sync
         if (event === 'INITIAL_SESSION') {
-          console.log('[AuthContext] Initial session - skipping duplicate profile fetch');
+          console.log('[AuthContext] Initial session - already handled in initialization');
+          setSession(session);
+          setUser(session?.user ?? null);
           return;
         }
         
         // Handle token expiration
         if (event === 'TOKEN_REFRESHED') {
           console.log('[AuthContext] Token refreshed successfully');
+          setSession(session);
+          setUser(session?.user ?? null);
           return; // Don't refetch profile on token refresh
         } else if (event === 'SIGNED_OUT') {
           console.log('[AuthContext] User signed out');
@@ -160,6 +165,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Only fetch profile for SIGNED_IN event
         if (event === 'SIGNED_IN') {
           console.log('[AuthContext] User signed in, fetching profile...');
+          // Set loading to false initially to prevent blocking
+          setLoading(false);
         }
         
         setSession(session);
@@ -189,19 +196,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!mounted) return;
             setProfile(null);
             setIsAdmin(false);
-          } finally {
-            // Ensure loading is set to false after profile fetch completes
-            if (mounted) {
-              setLoading(false);
-            }
           }
         } else {
           setProfile(null);
           setIsAdmin(false);
-          // Ensure loading is set to false even when no user
-          if (mounted) {
-            setLoading(false);
-          }
         }
       }
     );
