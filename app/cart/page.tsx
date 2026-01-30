@@ -12,6 +12,7 @@ import { getAvailableStock, getStockMessage, isStockAvailable } from '@/lib/cart
 import type { Product } from '@/types';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { AvailableCoupons } from '@/components/coupons';
 
 interface CartItemWithProduct {
   id: string;
@@ -327,7 +328,16 @@ export default function CartPage() {
             ))}
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            {/* Available Coupons */}
+            <div className="bg-white rounded-2xl p-6 shadow-md">
+              <AvailableCoupons 
+                variant="compact"
+                onCouponSelect={(code) => toast.success(`Coupon ${code} copied! Apply at checkout.`)}
+              />
+            </div>
+
+            {/* Order Summary */}
             <div className="bg-white rounded-2xl p-8 shadow-md sticky top-24">
               <h2 className="text-2xl font-medium text-stone-900 mb-6">Order Summary</h2>
 

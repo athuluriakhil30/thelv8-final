@@ -33,7 +33,10 @@ export const couponService = {
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('coupons')
-      .select('*')
+      .select(`
+        *,
+        rules:coupon_rules(*)
+      `)
       .eq('is_active', true)
       .lte('valid_from', now)
       .gte('valid_until', now)
