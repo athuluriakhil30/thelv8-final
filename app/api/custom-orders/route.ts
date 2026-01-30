@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Send email to business
     const { data, error } = await resend.emails.send({
       from: 'THE LV8 Custom Orders <support@thelv8.com>',
-      to: 'athuluriakhil@gmail.com',
+      to: 'thelv8clothing@gmail.com',
       replyTo: email,
       subject: `New Custom Order Inquiry from ${name}`,
       html: `
