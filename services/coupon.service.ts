@@ -31,19 +31,34 @@ export const couponService = {
   // Get active coupons (public)
   async getActiveCoupons() {
     const now = new Date().toISOString();
-    const { data, error } = await supabase
+    const { data: coupons, error } = await supabase
       .from('coupons')
-      .select(`
-        *,
-        rules:coupon_rules(*)
-      `)
+      .select('*')
       .eq('is_active', true)
       .lte('valid_from', now)
       .gte('valid_until', now)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data as Coupon[];
+    if (!coupons) return [];
+    
+    // Fetch rules for all coupons
+    const couponIds = coupons.map(c => c.id);
+    const { data: rules, error: rulesError } = await supabase
+      .from('coupon_rules')
+      .select('*')
+      .in('coupon_id', couponIds)
+      .eq('is_active', true);
+    
+    if (rulesError) console.error('Error fetching coupon rules:', rulesError);
+    
+    // Merge rules into coupons
+    const couponsWithRules = coupons.map(coupon => ({
+      ...coupon,
+      rules: rules?.filter(rule => rule.coupon_id === coupon.id) || []
+    }));
+    
+    return couponsWithRules as Coupon[];
   },
 
   // Validate and calculate coupon discount
