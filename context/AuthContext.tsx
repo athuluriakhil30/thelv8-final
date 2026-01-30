@@ -162,11 +162,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         
-        // Only fetch profile for SIGNED_IN event
+        // Handle SIGNED_IN event
         if (event === 'SIGNED_IN') {
           console.log('[AuthContext] User signed in, fetching profile...');
-          // Set loading to false initially to prevent blocking
-          setLoading(false);
         }
         
         setSession(session);
@@ -178,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!mounted) return;
             setProfile(userProfile);
             setIsAdmin(userProfile.role === 'admin');
+            setLoading(false); // Set loading false after profile is loaded
             console.log('[AuthContext] Profile loaded successfully');
           } catch (error: any) {
             // Ignore AbortErrors (happens when component unmounts)
@@ -196,10 +195,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!mounted) return;
             setProfile(null);
             setIsAdmin(false);
+            setLoading(false); // Set loading false even on error
           }
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setLoading(false); // Set loading false when no user
         }
       }
     );
