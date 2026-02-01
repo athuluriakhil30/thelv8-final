@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/orders/cleanup-abandoned",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 */6 * * *"
     }
   ],
   "functions": {
