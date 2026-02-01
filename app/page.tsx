@@ -122,8 +122,26 @@ export default function Home() {
             <source src="/animations/mobile-hero.webm" type="video/webm" />
             Your browser does not support the video tag.
           </video>
-          {/* Optional overlay for better text readability */}
-          <div className="absolute inset-0 bg-black/10"></div>
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/30"></div>
+        </div>
+
+        {/* Mobile Hero Content - Text and Button */}
+        <div className="md:hidden relative z-10 text-center px-6 flex flex-col items-center justify-center">
+          <h1 className="text-4xl sm:text-5xl font-light text-white mb-4 tracking-tight drop-shadow-lg">
+            Elevate Your Style
+          </h1>
+          <p className="text-white/90 text-lg mb-8 max-w-sm drop-shadow-md">
+            Premium clothing for the modern wardrobe
+          </p>
+          <Link
+            href="/shop"
+            className="inline-flex items-center gap-2 bg-white text-stone-900 px-8 py-4 rounded-full font-semibold hover:bg-amber-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            Shop Now
+            <ArrowRight className="w-5 h-5" />
+          </Link>
         </div>
 
         {/* Desktop Lottie Animation Background */}
