@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/orders/cleanup-abandoned",
+      "schedule": "*/30 * * * *"
+    }
+  ],
   "functions": {
     "app/api/razorpay/webhook/route.ts": {
       "memory": 1024,
@@ -7,6 +13,10 @@
     "app/api/razorpay/create-order/route.ts": {
       "memory": 1024,
       "maxDuration": 10
+    },
+    "app/api/orders/cleanup-abandoned/route.ts": {
+      "memory": 512,
+      "maxDuration": 30
     }
   },
   "headers": [

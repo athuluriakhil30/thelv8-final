@@ -278,15 +278,26 @@ export const orderService = {
       updates.payment_id = paymentId;
     }
 
-    const { data, error } = await supabase
+    // ✅ FIX: Add timeout to prevent hanging on slow networks
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Payment status update timeout')), 8000)
+    );
+
+    const updatePromise = supabase
       .from('orders')
       .update(updates)
       .eq('id', orderId)
       .select()
       .single();
 
-    if (error) throw error;
-    return data as unknown as Order;
+    try {
+      const { data, error } = await Promise.race([updatePromise, timeoutPromise]) as any;
+      if (error) throw error;
+      return data as unknown as Order;
+    } catch (error: any) {
+      console.error('[OrderService] updatePaymentStatus failed:', error?.message || error);
+      throw error;
+    }
   },
 
   // Update Razorpay order ID for webhook reconciliation

@@ -687,15 +687,29 @@ export default function CheckoutPage() {
           currentOrderId.current = null;
           localStorage.removeItem('thelv8-pending-payment');
           
+          console.log('[Checkout] Payment handler called with:', {
+            payment_id: response.razorpay_payment_id,
+            order_id: response.razorpay_order_id,
+            signature: response.razorpay_signature ? 'present' : 'missing'
+          });
+          
+          // ✅ FIX: Always redirect to success page first, then try to update
+          // The webhook will handle the DB update if client-side fails
+          // This ensures user ALWAYS sees success page when payment succeeds
+          
+          let updateSucceeded = false;
+          
           try {
-            // Payment successful
+            // Try to update payment status (non-blocking for redirect)
             await orderService.updatePaymentStatus(
               order.id,
               'paid',
               response.razorpay_payment_id
             );
+            updateSucceeded = true;
+            console.log('[Checkout] Payment status updated successfully');
 
-            // Send order confirmation email after successful payment
+            // Send order confirmation email after successful payment (non-blocking)
             emailClient.sendOrderConfirmation({
               to: user?.email || '',
               customerName: selectedAddress.full_name,
@@ -730,15 +744,48 @@ export default function CheckoutPage() {
             }).catch(emailError => {
               console.error('Failed to send order confirmation email:', emailError);
             });
-
-            await clearCart();
-            router.push(`/order-success/${order.id}`);
-            toast.success('Payment successful! Order placed.');
           } catch (error) {
-            console.error('Error updating payment:', error);
-            toast.error('Payment received but order update failed. Contact support.');
-          } finally {
-            setProcessing(false);
+            // ✅ FIX: Don't block redirect if update fails - webhook will handle it
+            console.error('[Checkout] Error updating payment status (webhook will handle):', error);
+            // Continue to redirect - webhook will update the order
+          }
+          
+          // ✅ CRITICAL: Always clear cart and redirect, even if update failed
+          // Razorpay has confirmed payment, webhook will ensure DB is updated
+          try {
+            await clearCart();
+          } catch (cartError) {
+            console.error('[Checkout] Error clearing cart:', cartError);
+            // Continue anyway - cart will be stale but user should see success
+          }
+          
+          setProcessing(false);
+          
+          // ✅ Always redirect to success page
+          toast.success('Payment successful! Order placed.');
+          
+          // ✅ FIX: Use multiple redirect methods for reliability
+          const successUrl = `/order-success/${order.id}`;
+          
+          try {
+            router.push(successUrl);
+            
+            // Fallback: If router.push doesn't navigate within 2 seconds, force redirect
+            setTimeout(() => {
+              if (window.location.pathname !== successUrl && !window.location.pathname.includes('order-success')) {
+                console.log('[Checkout] Router.push failed, using window.location fallback');
+                window.location.href = successUrl;
+              }
+            }, 2000);
+          } catch (routerError) {
+            console.error('[Checkout] Router.push failed:', routerError);
+            // Immediate fallback to window.location
+            window.location.href = successUrl;
+          }
+          
+          // If client update failed, log it for debugging
+          if (!updateSucceeded) {
+            console.warn('[Checkout] Client update failed, relying on webhook for order:', order.id);
           }
         },
         prefill: {
