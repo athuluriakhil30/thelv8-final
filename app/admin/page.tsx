@@ -78,14 +78,14 @@ export default function AdminDashboard() {
       value: stats.totalOrders,
       icon: ShoppingBag,
       color: 'bg-green-100 text-green-700',
-      href: '/admin/orders',
+      href: '/admin/analytics',
     },
     {
       title: 'Total Revenue',
       value: formatPrice(stats.totalRevenue),
       icon: TrendingUp,
       color: 'bg-amber-100 text-amber-700',
-      href: '/admin/orders',
+      href: '/admin/analytics',
     },
     {
       title: 'Pending Orders',
