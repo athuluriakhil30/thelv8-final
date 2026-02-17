@@ -351,3 +351,17 @@ export interface CouponBreakdown {
   appliedRuleCount: number;
   explanation: string;
 }
+
+// ============================================
+// BEST SELLERS
+// ============================================
+
+export interface BestSeller {
+  id: string;
+  product_id: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  product?: Product;
+}

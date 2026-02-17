@@ -10,6 +10,7 @@ const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import { productService } from '@/services/product.service';
 import { collectionService } from '@/services/collection.service';
 import { settingsService } from '@/services/settings.service';
+import { bestSellerService } from '@/services/bestseller.service';
 import { Product, Collection } from '@/types';
 import { formatPrice } from '@/lib/helpers';
 import { useWishlist } from '@/context/WishlistContext';
@@ -19,6 +20,7 @@ import { toast } from 'sonner';
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [featuredCollections, setFeaturedCollections] = useState<Collection[]>([]);
   const [settings, setSettings] = useState({ free_shipping_threshold: 500 });
   const [loading, setLoading] = useState(true);
@@ -55,16 +57,17 @@ export default function Home() {
   async function loadHomeData() {
     try {
       setLoading(true);
-      
-      const [productsData, arrivals, collections, siteSettings] = await Promise.all([
+      const [productsData, arrivals, bestsellers, collections, siteSettings] = await Promise.all([
         productService.getProducts({ featured: true, limit: 6 }),
         productService.getNewArrivals(4),
+        bestSellerService.getBestSellers(4),
         collectionService.getFeaturedCollections(),
         settingsService.getSettings()
       ]);
       
       setFeaturedProducts(productsData.products);
       setNewArrivals(arrivals);
+      setBestSellers(bestsellers);
       setFeaturedCollections(collections.slice(0, 3));
       setSettings(siteSettings);
     } catch (error: any) {
@@ -377,7 +380,103 @@ export default function Home() {
                 View All New Arrivals
               </Link>
             </div>
+        
+
+      {/* Best Sellers Section */}
+      {bestSellers.length > 0 && (
+        <section className="py-20 md:py-28 bg-gradient-to-b from-white via-stone-50/30 to-stone-50 relative overflow-hidden">
+          {/* Decorative gradient orbs */}
+          <div className="absolute top-20 right-10 w-72 h-72 bg-green-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl"></div>
+          
+          <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+            <div className="text-center mb-16 md:mb-20">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-green-50 text-green-700 px-5 py-2.5 rounded-full text-sm font-semibold mb-6 shadow-sm border border-green-200/50">
+                <TrendingUp className="w-4 h-4" />
+                Most Popular
+              </div>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-stone-900 mb-5 tracking-tight">Best Sellers</h2>
+              <p className="text-stone-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">Customer favorites that keep selling out</p>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+              {bestSellers.slice(0, 4).map((product, index) => (
+                <div key={product.id} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-stone-100 hover:border-green-200 relative">
+                  {/* Best Seller Badge */}
+                  {index < 3 && (
+                    <div className="absolute top-0 left-0 w-full z-10">
+                      <div className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-br-2xl text-xs font-bold shadow-lg ${
+                        index === 0 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-white' :
+                        index === 1 ? 'bg-gradient-to-r from-stone-300 to-stone-400 text-stone-900' :
+                        'bg-gradient-to-r from-orange-300 to-orange-400 text-orange-900'
+                      }`}>
+                        <Star className="w-3.5 h-3.5" fill="currentColor" />
+                        #{index + 1} Best Seller
+                      </div>
+                    </div>
+                  )}
+
+                  <Link href={`/product/${product.id}`} className="block relative aspect-square overflow-hidden bg-stone-100">
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-16 h-16 text-stone-400" />
+                      </div>
+                    )}
+                    
+                    {/* Gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-green-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    {product.stock === 0 && (
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                        <span className="text-white font-semibold text-lg tracking-wide">Out of Stock</span>
+                      </div>
+                    )}
+
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleWishlistToggle(product.id);
+                      }}
+                      className="absolute bottom-3 right-3 w-11 h-11 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-white shadow-xl hover:shadow-2xl hover:rotate-12"
+                    >
+                      <Heart 
+                        className={`w-5 h-5 transition-all duration-300 ${
+                          isInWishlist(product.id) 
+                            ? 'fill-red-500 text-red-500 scale-110' 
+                            : 'text-stone-700'
+                        }`} 
+                      />
+                    </button>
+                  </Link>
+
+                  <div className="p-4">
+                    <Link href={`/product/${product.id}`}>
+                      <h3 className="text-sm md:text-base font-semibold text-stone-900 mb-2 group-hover:text-green-600 transition-colors line-clamp-2 leading-snug">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {product.compare_at_price && product.compare_at_price > product.price && (
+                          <span className="text-xs md:text-sm font-light text-stone-400 line-through">{formatPrice(product.compare_at_price)}</span>
+                        )}
+                        <span className="text-lg md:text-xl font-semibold text-stone-900">{formatPrice(product.price)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        </section>
+      )}  </div>
         </section>
       )}
 

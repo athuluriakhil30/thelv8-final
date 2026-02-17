@@ -141,6 +141,12 @@ export default function AdminDashboard() {
               View Orders
             </Link>
             <Link
+              href="/admin/best-sellers"
+              className="block px-6 py-3 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors text-center font-medium"
+            >
+              Manage Best Sellers
+            </Link>
+            <Link
               href="/admin/customers"
               className="block px-6 py-3 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors text-center font-medium"
             >

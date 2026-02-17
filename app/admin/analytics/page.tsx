@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
         refundedOrders: ordersData.filter(o => o.status === 'refunded').length,
         failedOrders: ordersData.filter(o => o.payment_status === 'failed').length,
         totalRevenue: ordersData
-          .filter(o => o.status !== 'cancelled' && o.status !== 'refunded')
+          .filter(o => o.status !== 'cancelled' && o.status !== 'refunded' && o.payment_status === 'paid')
           .reduce((sum, o) => sum + o.total, 0),
         averageOrderValue: 0,
       };
@@ -94,7 +94,7 @@ export default function AnalyticsPage() {
       // Calculate top products
       const productMap = new Map<string, ProductSales>();
       ordersData
-        .filter(o => o.status !== 'cancelled' && o.status !== 'refunded')
+        .filter(o => o.status !== 'cancelled' && o.status !== 'refunded' && o.payment_status === 'paid')
         .forEach(order => {
           order.items.forEach(item => {
             const existing = productMap.get(item.product_name);
@@ -123,7 +123,7 @@ export default function AnalyticsPage() {
       const last30Days = ordersData.filter(o => {
         const orderDate = new Date(o.created_at);
         const daysDiff = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
-        return daysDiff <= 30 && o.status !== 'cancelled' && o.status !== 'refunded';
+        return daysDiff <= 30 && o.status !== 'cancelled' && o.status !== 'refunded' && o.payment_status === 'paid';
       });
 
       last30Days.forEach(order => {
