@@ -94,7 +94,24 @@ Target Benefit:
 - Apply To: Source Items
 ```
 
-### Scenario 3: Buy 3 Items, Get 10% Off
+### Scenario 3: Bundle - 3 for ₹500 (Limited Quantity)
+
+```
+Source Conditions:
+- Source Type: Category
+- Category: [Essentials]
+- Min Quantity: 3
+- Max Quantity: 3  ⭐ NEW - Prevents abuse
+
+Target Benefit:
+- Benefit Type: Bundle Fixed Price
+- Bundle Price: 500
+```
+
+**Why set Max Quantity?**
+Without max quantity, customers could add 10 items and still pay only ₹500. Setting max to 3 ensures only exactly 3 items qualify for the bundle.
+
+### Scenario 4: Buy 3 Items, Get 10% Off
 
 ```
 Source Conditions:

@@ -257,6 +257,7 @@ export interface CouponRule {
   source_category_id?: string | null;
   source_new_arrival_required?: boolean | null;
   source_min_quantity: number;
+  source_max_quantity?: number | null;
   source_min_amount?: number | null;
   
   // Target Benefit (What discount they receive)

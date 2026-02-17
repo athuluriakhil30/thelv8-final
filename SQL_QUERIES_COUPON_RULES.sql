@@ -188,16 +188,54 @@ INSERT INTO coupon_rules (
     'Buy 2 from category, get 10% off'
 );
 
--- Example 5: Bundle 3 Items for ₹999
+-- Example 5: Bundle 3 Items for ₹999 (with max quantity limit)
 INSERT INTO coupon_rules (
     coupon_id,
     rule_name,
     rule_priority,
     source_type,
     source_min_quantity,
+    source_max_quantity,
     benefit_type,
     bundle_fixed_price,
     description
+) VALUES (
+    '<coupon-id>',
+    'Bundle 3 for 999',
+    10,
+    'any',
+    3,
+    3, -- Maximum 3 items allowed
+    'bundle_price',
+    999.00,
+    'Buy exactly 3 items for ₹999 (no more, no less)'
+);
+
+-- Example 6: Buy 3-6 Essentials for ₹500 each set of 3
+-- This allows customers to buy up to 6 items (2 sets of 3)
+INSERT INTO coupon_rules (
+    coupon_id,
+    rule_name,
+    rule_priority,
+    source_type,
+    source_category_id,
+    source_min_quantity,
+    source_max_quantity,
+    benefit_type,
+    bundle_fixed_price,
+    description
+) VALUES (
+    '<coupon-id>',
+    'Essentials Bundle',
+    10,
+    'category',
+    '<essentials-category-id>',
+    3,
+    6, -- Allow up to 6 items (2 bundles)
+    'bundle_price',
+    500.00,
+    'Get 3 Essentials for ₹500 (max 6 items = 2 bundles for ₹1000)'
+);
 ) VALUES (
     '<coupon-id>',
     'Bundle Deal - 3 for ₹999',

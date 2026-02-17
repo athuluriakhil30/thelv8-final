@@ -29,6 +29,8 @@ Defines advanced rules for coupons.
 - `source_category_id`: Category ID for source condition
 - `source_new_arrival_required`: New arrival flag requirement
 - `source_min_quantity`: Minimum items required
+- `source_max_quantity`: Maximum items allowed (NULL = no limit) - **Prevents abuse of bundle pricing**
+- `source_min_amount`: Minimum purchase amount
 - `benefit_type`: Type of benefit (`free_items`, `fixed_discount`, `percentage_discount`, `bundle_price`)
 - Target fields for defining what discount customer receives
 
@@ -104,6 +106,21 @@ source_min_quantity: 3
 benefit_type: 'bundle_price'
 bundle_fixed_price: 999
 ```
+
+### 6. Bundle with Quantity Limit (Prevents Abuse)
+**Example**: Buy exactly 3 essentials for ₹500 (max 3 items)
+
+```typescript
+source_type: 'category'
+source_category_id: '<essentials-category-id>'
+source_min_quantity: 3
+source_max_quantity: 3  // Prevents buying 10 items for ₹500
+benefit_type: 'bundle_price'
+bundle_fixed_price: 500
+```
+
+**Why use max_quantity?**
+Without `source_max_quantity`, a customer could add 10 items to cart and still get them all for ₹500. Setting `source_max_quantity: 3` ensures only 3 items qualify for the bundle price.
 
 ---
 

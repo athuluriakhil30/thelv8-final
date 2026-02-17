@@ -320,6 +320,18 @@ export const couponRulesService = {
       };
     }
 
+    // Check maximum quantity if specified
+    if (rule.source_max_quantity && totalSourceQuantity > rule.source_max_quantity) {
+      return {
+        rule,
+        sourceItems: [],
+        targetItems: [],
+        discountAmount: 0,
+        canApply: false,
+        reason: `Maximum ${rule.source_max_quantity} ${this.getSourceDescription(rule)} allowed for this offer, but you have ${totalSourceQuantity}`,
+      };
+    }
+
     // Check minimum amount if specified
     if (rule.source_min_amount) {
       const sourceTotal = sourceItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);

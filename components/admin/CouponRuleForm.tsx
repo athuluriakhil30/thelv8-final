@@ -43,6 +43,7 @@ export function CouponRuleForm({ couponId, couponCode, existingRule, onSave, onC
     existingRule?.source_new_arrival_required ?? null
   );
   const [sourceMinQuantity, setSourceMinQuantity] = useState(existingRule?.source_min_quantity || 1);
+  const [sourceMaxQuantity, setSourceMaxQuantity] = useState(existingRule?.source_max_quantity || null);
   const [sourceMinAmount, setSourceMinAmount] = useState(existingRule?.source_min_amount || 0);
   
   // Benefit type
@@ -105,6 +106,7 @@ export function CouponRuleForm({ couponId, couponCode, existingRule, onSave, onC
         source_category_id: sourceCategoryId || null,
         source_new_arrival_required: sourceNewArrival,
         source_min_quantity: sourceMinQuantity,
+        source_max_quantity: sourceMaxQuantity || null,
         source_min_amount: sourceMinAmount || null,
         
         // Benefit type
@@ -252,7 +254,7 @@ export function CouponRuleForm({ couponId, couponCode, existingRule, onSave, onC
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="sourceMinQuantity">Minimum Quantity *</Label>
               <Input
@@ -262,6 +264,19 @@ export function CouponRuleForm({ couponId, couponCode, existingRule, onSave, onC
                 value={sourceMinQuantity}
                 onChange={(e) => setSourceMinQuantity(Number(e.target.value))}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="sourceMaxQuantity">Maximum Quantity</Label>
+              <Input
+                id="sourceMaxQuantity"
+                type="number"
+                min="0"
+                placeholder="No limit"
+                value={sourceMaxQuantity || ''}
+                onChange={(e) => setSourceMaxQuantity(e.target.value ? Number(e.target.value) : null)}
+              />
+              <p className="text-xs text-stone-500 mt-1">Leave empty for no limit</p>
             </div>
 
             <div>
