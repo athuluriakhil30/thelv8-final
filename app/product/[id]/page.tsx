@@ -13,6 +13,7 @@ import { formatPrice } from '@/lib/helpers';
 import { getAvailableStock, validateSingleItem } from '@/lib/cart-validation';
 import { toast } from 'sonner';
 import type { Product, ProductColor } from '@/types';
+import { ProductPageSEO } from '@/components/SEO';
 
 export default function ProductPage() {
   const params = useParams();
@@ -236,6 +237,9 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen pt-24 pb-16 bg-white">
+      {/* SEO Module - Structured Data & Meta Tags */}
+      <ProductPageSEO product={product} />
+      
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-8">
           <Link href="/shop" className="text-stone-600 hover:text-stone-900 transition-colors">

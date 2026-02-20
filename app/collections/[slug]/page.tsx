@@ -10,6 +10,7 @@ import { formatPrice } from '@/lib/helpers';
 import { toast } from 'sonner';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { CollectionPageSEO } from '@/components/SEO';
 
 export default function CollectionDetailPage() {
   const params = useParams();
@@ -109,6 +110,9 @@ export default function CollectionDetailPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
+      {/* SEO Module - Structured Data & Meta Tags */}
+      <CollectionPageSEO collection={collection} productCount={products.length} />
+      
       {/* Collection Header */}
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 py-16">

@@ -11,28 +11,12 @@ import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { WebViewRedirect } from '@/components/WebViewRedirect';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { OrganizationSchema, WebsiteSchema } from '@/components/StructuredData';
+import { defaultMetadata } from '@/lib/metadata';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
-export const metadata: Metadata = {
-  title: 'thelv8 - Elevate Your Style',
-  description: 'Premium clothing collections for the modern wardrobe',
-  openGraph: {
-    images: [
-      {
-        url: 'https://images.pexels.com/photos/6764040/pexels-photo-6764040.jpeg',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    images: [
-      {
-        url: 'https://images.pexels.com/photos/6764040/pexels-photo-6764040.jpeg',
-      },
-    ],
-  },
-};
+export const metadata: Metadata = defaultMetadata;
 
 export default function RootLayout({
   children,
@@ -41,6 +25,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
+      <head>
+        <OrganizationSchema />
+        <WebsiteSchema />
+      </head>
       <body className={spaceGrotesk.className}>
         <GoogleAnalytics />
         <WebViewRedirect />
