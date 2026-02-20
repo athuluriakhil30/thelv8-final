@@ -9,8 +9,8 @@ interface OrganizationSchemaProps {
 
 export function OrganizationSchema({
   name = 'thelv8',
-  url = process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com',
-  logo = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com'}/logo.png`,
+  url = (process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com').replace(/\/$/, ''),
+  logo = `${(process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com').replace(/\/$/, '')}/logo.png`,
   description = 'Premium clothing collections for the modern wardrobe',
 }: OrganizationSchemaProps) {
   const schema = {
@@ -47,7 +47,7 @@ interface WebsiteSchemaProps {
 
 export function WebsiteSchema({
   name = 'thelv8',
-  url = process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com',
+  url = (process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com').replace(/\/$/, ''),
   description = 'Discover premium clothing collections for the modern wardrobe. Shop the latest fashion trends.',
 }: WebsiteSchemaProps) {
   const schema = {

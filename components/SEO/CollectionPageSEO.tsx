@@ -14,7 +14,7 @@ interface CollectionPageSEOProps {
  * Adds structured data without modifying core functionality
  */
 export function CollectionPageSEO({ collection, productCount }: CollectionPageSEOProps) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com';
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com').replace(/\/$/, '');
   const collectionUrl = `${baseUrl}/collections/${collection.slug}`;
   const description = collection.description || `Shop ${collection.name} collection at thelv8. Discover premium fashion and elevate your style.`;
   

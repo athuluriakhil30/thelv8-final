@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com';
+const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com').replace(/\/$/, '');
 const siteName = 'thelv8';
 const siteDescription = 'Discover premium clothing collections for the modern wardrobe. Shop the latest fashion trends with free shipping across India. Elevate your style with thelv8.';
 

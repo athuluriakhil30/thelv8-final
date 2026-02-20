@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com';
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com').replace(/\/$/, '');
   
   // Static pages with high priority
   const staticPages: MetadataRoute.Sitemap = [

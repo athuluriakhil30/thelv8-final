@@ -13,7 +13,7 @@ interface ProductPageSEOProps {
  * Adds structured data without modifying core functionality
  */
 export function ProductPageSEO({ product }: ProductPageSEOProps) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com';
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://thelv8.com').replace(/\/$/, '');
   const productUrl = `${baseUrl}/product/${product.id}`;
   
   // Update page metadata dynamically
